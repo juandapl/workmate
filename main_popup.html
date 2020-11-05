@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="main_popup.css"/>
+    </head>
+
+    <body>
+        <h1>Workmate</h1>
+
+        <h2>New Workshift</h2>
+
+            
+        <h2>Blocked pages</h2>
+        <div class= "internal">
+            <input type="radio" id="existing_set" name="select_set" value="existing_set">
+            <label for="existing_set">Start from an existing set</label><br>
+            <label for="blocked_set">Select blocked page set: </label> <!--Options can be added using JS document.getElement--> 
+            <select  name="blocked_set" id="blocked_set" type="main">
+                <option value="">Select...</option>
+            </select>
+            <br>
+            <input type="radio" id="new_set" name="select_set" value="new_set">
+            <label for="new_set">Start from scratch</label>
+            <br>
+        </div>
+
+        
+        <h2>Time?</h2>
+        <div class= "internal">
+            <input type="number" id="total_hours" name="total_hours" min="0" max="12" placeholder="h">    <span>:</span>
+            <input type="number" id="total_minutes" name="total_minutes" min="0" max="59" placeholder="min">    
+        </div>
+
+        
+        <h2>Breaks?</h2>
+        <div class= "internal">
+            <input type="radio" id="yes_breaks" name="select_breaks" value="yes">
+            <label for="yes_breaks">Yes</label>
+            <input type="radio" id="no_breaks" name="select_breaks" value="no">
+            <label for="no_breaks">No</label>
+        
+            <br>
+            <span>Breaks of</span>
+            <input type="number" id="break_minutes" name="break_minutes" min="0" max="59" placeholder="min">
+         
+
+            <br>
+            <span>every</span>
+            <input type="number" id="gap_hours" name="gap_hours" min="0" max="12" placeholder="h">    <span>:</span>
+            <input type="number" id="gap_minutes" name="gap_minutes" min="0" max="59" placeholder="min">   
+        </div>
+        
+
+        <h2>Additional settings</h2>
+        <div class= "internal">
+            <input type="checkbox" id="tmw" name="tmw" value="tmw"> <span>Too Much Wikipedia</span> <br>
+            <input type="checkbox" id="essay" name="essay" value="essay"> <span>Essay Mode</span>
+        </div>
+
+        <br>
+
+
+
+
+   
+        <input type="button" value="Start Workshift" > <!--Put the js function here using onclick once it is done-->
+       
+
+    </body>
+
+</html>

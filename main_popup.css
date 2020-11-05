@@ -1,0 +1,97 @@
+
+@font-face {
+    font-family: 'Alata', sans-serif;
+    src: url(fonts/alata-regular.ttf)
+}
+
+@font-face {
+    font-family: 'Glacial Indifference', normal, sans-serif;
+    src: url(fonts/GlacialIndifference-Regular.otf);
+}
+
+@font-face {
+    font-family: 'Glacial Indifference', sans-serif;
+    src: url(fonts/GlacialIndifference-Bold.otf);
+    font-weight: bold;
+}
+
+body {
+    width: 300px;
+    background: linear-gradient(180deg,rgba(45,15,66,1) 40%, rgba(39,145,100,1) 100%);
+}
+
+h1 {
+    color: white;
+    font-family: "Glacial Indifference", sans-serif;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    font-size: 36px;
+    line-height: 10px;
+}
+
+h2 {
+    color: white;
+    font-family: "Glacial Indifference", normal, sans-serif;
+    padding-top: 10px;
+    padding-bottom: 0px;
+    font-size: 20px;
+    line-height: 0px;
+}
+
+div {
+    background-color: white;
+    border-radius: 3px;
+    box-sizing: border-box;
+    padding: 10px;
+
+}
+
+span, label, p {
+    color: black;
+    font-family: "Glacial Indifference", normal, sans-serif;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    font-size: 14px;
+    line-height: 0px;
+    vertical-align: middle;
+    
+}
+
+span
+{
+    margin-left: 8px
+}
+
+input[type=button] {
+    background-color: rgba(45,15,66,1);
+    color: white;
+    padding: 16px 32px;
+    font-family: "Glacial Indifference", sans-serif;
+    font-size: 14px;
+    border-radius: 4px;
+    border: none;
+    margin: auto;
+
+
+}
+
+input {
+    font-family: "Glacial Indifference", sans-serif;
+    font-size: 14px;
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 1px;
+    margin-left: 8px
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+    width: 40px
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
