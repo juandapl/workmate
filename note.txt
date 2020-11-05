@@ -1,0 +1,17 @@
+"content_scripts": ["todo place here cases for executing different js scripts."]
+
+en manifest hay varias cosas interesantes que se pueden hacer
+"browser_action" adds a button to the taskbar 
+inside browser_action you have to put default icon, default title, and default popup. Default popup is used to make a popup appear when the button is clicked
+web_accessible_resources is a parameter that states the files that the page can access.
+
+all paths from manifest are relative to it.
+
+the popup works like a webpage - with html, css and js for each page.
+
+in a css file, html, body {
+  width: 100px;
+} define the size of a window/renderspace
+
+
+FOR SOME REASON MOZILLA IS DYING.
