@@ -53,11 +53,11 @@ div.internal{
 }
 
 div.new_workshift {
-    display: none;
+    /* display: none; */
 }
 
 div.workshift_running {
-    display: none;
+    /* display: none; */
 }
 
 .inline_block {
