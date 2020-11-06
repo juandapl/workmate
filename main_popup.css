@@ -10,14 +10,14 @@
 }
 
 @font-face {
-    font-family: 'Glacial Indifference', sans-serif;
+    font-family: 'Glacial Indifference Bold', sans-serif;
     src: url(fonts/GlacialIndifference-Bold.otf);
     font-weight: bold;
 }
 
 body {
     width: 300px;
-    background: linear-gradient(180deg,rgba(45,15,66,1) 40%, rgba(39,145,100,1) 100%);
+    background: linear-gradient(180deg,rgba(45,15,66,1) 45%, rgba(39,145,100,1) 100%);
 }
 
 h1 {
@@ -38,12 +38,32 @@ h2 {
     line-height: 0px;
 }
 
-div {
+.timer {
+    color: white;
+    font-family: "Alata", sans-serif;
+    font-size: 38px;
+    text-align: center
+}
+
+div.internal{
     background-color: white;
     border-radius: 3px;
     box-sizing: border-box;
-    padding: 10px;
+    padding: 15px;
+}
 
+div.new_workshift {
+    display: none;
+}
+
+div.workshift_running {
+    display: none;
+}
+
+.inline_block {
+    display: inline-block;
+    width: 49.3%;
+    margin-bottom: 10px;
 }
 
 span, label, p {
@@ -57,12 +77,14 @@ span, label, p {
     
 }
 
-span
-{
-    margin-left: 8px
+p.white {
+    color: white;
+    text-align: center
 }
 
-input[type=button] {
+
+
+input.purpbutton{
     background-color: rgba(45,15,66,1);
     color: white;
     padding: 16px 32px;
@@ -71,7 +93,50 @@ input[type=button] {
     border-radius: 4px;
     border: none;
     margin: auto;
+    margin-bottom: 10px;
+}
 
+input.purpinlinebutton{
+    background-color: rgba(45,15,66,1);
+    color: white;
+    padding: 16px 32px;
+    font-family: "Glacial Indifference", sans-serif;
+    font-size: 14px;
+    border-radius: 4px;
+    border: none;
+    margin: auto;
+    margin-bottom: 10px;
+    display: inline-block;
+    width: 49.3%;
+    margin-bottom: 10px;
+}
+
+input.greenbutton{
+    background-color: rgba(39,145,100,1);
+    color: white;
+    padding: 16px 32px;
+    
+    font-family: "Glacial Indifference", sans-serif;
+    font-size: 14px;
+    border-radius: 4px;
+    border: none;
+    margin: auto;
+    width: 100%;
+
+}
+
+input.redbutton{
+    background-color: rgb(145, 39, 39);
+    color: white;
+    padding: 16px 32px;
+    
+    font-family: "Glacial Indifference", sans-serif;
+    font-size: 14px;
+    border-radius: 4px;
+    border: none;
+    margin: auto;
+    width: 100%;
+    margin-bottom: 5px;
 
 }
 
@@ -81,7 +146,7 @@ input {
     border-radius: 4px;
     border-style: solid;
     border-width: 1px;
-    margin-left: 8px
+    margin-left: 5px;
 }
 
 input[type=number] {
