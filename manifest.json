@@ -9,6 +9,12 @@
         ]
     },
     "permissions": [ "activeTab", "storage" ],
+    "content_scripts": [{
+        "js": ["content.js"],
+        "run_at": "document_start",
+        "matches": ["http://*/*", "https://*/*"]
+        
+      }],
     "browser_action": {
         "default_icon": "icons/black-placeholder-variant.png",
         "default_title": "Workmate",
