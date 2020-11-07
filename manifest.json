@@ -3,12 +3,12 @@
     "name": "Workmate",
     "version": "1.0",
     "description": "Workmate blocks pages that affect your productivity, and lets you take back control of your time",
-
-
-    "permissions": [
-        "activeTab", "storage"
-      ],
-
+    "background": {
+        "scripts": [
+            "background.js"
+        ]
+    },
+    "permissions": [ "activeTab", "storage" ],
     "browser_action":
     {
         "default_icon": "icons/black-placeholder-variant.png",
