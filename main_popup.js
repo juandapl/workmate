@@ -1,31 +1,45 @@
 
-// Limit the input range for 'hour' inputs to 0-23
-// and 'minute' inputs to 0-59
+const remainingWorkTime = document.getElementById('remainingWorkTime')
 
-document.getElementById('total_hours').addEventListener('input', limitInputHours)
-document.getElementById('total_minutes').addEventListener('input', limitInputMinutes)
-document.getElementById('break_minutes').addEventListener('input', limitInputMinutes)
-document.getElementById('gap_hours').addEventListener('input', limitInputHours)
-document.getElementById('gap_minutes').addEventListener('input', limitInputMinutes)
+let timer;
 
-function limitInputHours() {
-    var value = this.value;
+function displayWorkTimeLeft(timeLeft) {
+    hours = parseInt(timeLeft / 60, 10);
+    minutes = parseInt(timeLeft % 60, 10);
 
-    if (value) {
-        value = parseFloat(value)
+    hours = hours < 10 ? "0" + hours : hours;
+    minutes = minutes < 10 ? "0" + minutes : minutes;
 
-        if (value < 0) this.value = 0;
-        else if (value > 23) this.value = 23;
+    remainingWorkTime.textContent = hours + ":" + minutes;
+}
+
+function timerToDecrementTimeLeft(timeLeft, delay) {
+    if (timeLeft > 0) { 
+        timer = setTimeout(() => {
+            displayWorkTimeLeft(timeLeft)
+            timeLeft -= 1;
+
+            timerToDecrementTimeLeft(timeLeft, 1000)
+        }, delay)
     }
 }
 
-function limitInputMinutes() {
-    var value = this.value;
+function setRemainingWorkTime(duration) {
+    let timeLeft = duration;
+    let tickDuration = (duration % 1) * 1000 // grab the seconds part of the duration
+    displayWorkTimeLeft(timeLeft)
 
-    if (value) {
-        value = parseFloat(value)
-
-        if (value < 0) this.value = 0;
-        else if (value > 59) this.value = 59;
-    }
+    clearTimeout(timer)
+    timerToDecrementTimeLeft(timeLeft, tickDuration)
 }
+
+chrome.runtime.sendMessage({ message: 'GET_REMAINING_TIME' }, 
+    remainingTime => {
+        if (remainingTime) setRemainingWorkTime(remainingTime)
+    }
+)
+
+document.getElementById('start_workshift').addEventListener('click', function() {
+    chrome.runtime.sendMessage({ message: 'START_TIMER', timerDuration: 90 })
+    setRemainingWorkTime(90)
+})

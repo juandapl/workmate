@@ -36,23 +36,24 @@
                 <input type="checkbox" id="afk" name="afk" value="afk"> <span>AFK Alarms</span>
             </div>
             <br>
-            <input type="button" value="Start Workshift" class="purpbutton"> <!--Put the js function here using onclick once it is done-->
+            <input type="button" id="start_workshift" value="Start Workshift" class="purpbutton">
         </div>
         
         <div class="workshift_running">
             <div class="inline_block">
-                <p class="timer" id="totalWorkTime">00:00</p>
+                <p class="timer" id="remainingWorkTime">00:00</p>
                 <p class="white" id="underTimerText">work time left</p>
             </div>
             <div class="inline_block">
-                <p class="timer" id="totalWorkTime">00:00</p>
+                <p class="timer" id="remainingTimeToBreak">00:00</p>
                 <p class="white" id="underTimerText">until next break</p>
             </div>
             <input type="button" value="Blacklist this page" class="redbutton">
             <input type="button" value="End Workshift" class="purpinlinebutton">
             <input type="button" value="Break now" class="purpinlinebutton">
         </div>
-    
+
+        <script src="js/popup_input_constraints.js"></script>
         <script src="main_popup.js"></script>
     </body>
 
