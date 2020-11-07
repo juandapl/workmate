@@ -57,14 +57,6 @@ div.internal{
     padding: 15px;
 }
 
-div.new_workshift {
-    /* display: none; */
-}
-
-div.workshift_running {
-    /* display: none; */
-}
-
 .inline_block {
     display: inline-block;
     width: 49.3%;

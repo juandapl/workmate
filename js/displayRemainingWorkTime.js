@@ -5,6 +5,7 @@ let timer;
 
 function displayWorkTimeLeft(timeLeft) {
     let hours = parseInt(timeLeft / 60, 10);
+    hours = hours / 100; //quick dirty fix because time is displaying with two trailing zeroes
     let minutes = parseInt(timeLeft % 60, 10);
 
     hours = hours < 10 ? "0" + hours : hours;

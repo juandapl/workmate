@@ -50,7 +50,16 @@
             </div>
             <input id="blacklist_page" type="button" value="Blacklist this page" class="redbutton">
             <input id="end_workshift" type="button" value="End Workshift" class="purpinlinebutton">
-            <input type="button" value="Break now" class="purpinlinebutton">
+            <input id="break_now" type="button" value="Break now" class="purpinlinebutton">
+        </div>
+
+        <div class="break_time" style="text-align: center;">
+            <div class="inline_block">
+                <p class="timer" id="remainingBreakTime">00:00</p>
+                <p class="white" id="underTimerText">break time left</p>  
+            </div>
+            <br>
+            <input id="end_break" type="button" value="End Break" class="purpinlinebutton">
         </div>
 
         <script src="js/popup_input_constraints.js"></script>
