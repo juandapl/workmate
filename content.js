@@ -1,19 +1,23 @@
 
-const bannedSiteList = [
-    'www.facebook.com',
-    'www.youtube.com'
-]
-
-chrome.storage.local.get('inWorkShift', res => {
+chrome.storage.local.get(['inWorkShift', 'blockList'], res => {
     if (res.inWorkShift !== true) return; // not in workshift mode
 
-    const curSite = window.location.hostname
-    if (bannedSiteList.includes(curSite)) { // is this site blocked?
+    let curDomainName = window.location.hostname
+    if (curDomainName.split('.').length == 2) {
+        curDomainName = 'www.' + curDomainName
+    }
+    if (res.blockList.includes(curDomainName)) { // is this site blocked?
         blockSite()
     }
 })
 
+
 //todo here add the listener to execute timealert? maybe?
+
+
+chrome.runtime.onMessage.addListener((request) => {
+    if (request.message === 'BLOCK_CURRENT_SITE') blockSite();
+})
 
 function blockSite() {
     var newFont = document.createElement('style');
@@ -26,7 +30,7 @@ function blockSite() {
     );
 
     const modal = document.createElement('div');
-    modal.setAttribute("style", "visibility: visible; z-index: 9999; background: linear-gradient(180deg,rgba(45,15,66,1) 45%, rgba(39,145,100,1) 100%); width: 100vw; height: 100vh; left: 0; top: 0; position: absolute;");
+    modal.setAttribute("style", "visibility: visible; z-index: 9999; background: linear-gradient(180deg,rgba(45,15,66,1) 45%, rgba(39,145,100,1) 100%); width: 100vw; height: 100vh; left: 0; top: 0; right: 0; bottom: 0; position: absolute;");
     modal.id = 'workMateBlocked'
 
     const alertContainer = document.createElement('div');
@@ -65,9 +69,7 @@ function blockSite() {
     modal.appendChild(alertContainer)
 
     document.body.appendChild(modal)
-    document.body.style.visibility = 'hidden'
-    document.body.style.height = '100vh'
-    document.body.style.overflow = 'hidden'
+    document.body.setAttribute("style", "visibility: hidden; width: 100vw; height: 100vh; overflow: hidden")
     document.head.appendChild(newFont)
 }
 
@@ -75,6 +77,7 @@ function unblockSite() {
     const modal = document.getElementById('workMateBlocked')
 
     document.body.removeChild(modal)
+
     document.body.style.visibility = 'visible'
     document.body.style.height = ''
     document.body.style.overflow = 'visible'
@@ -142,4 +145,7 @@ function dismissTimeAlert() { //yes Jun, I stole this code from you.
     document.body.style.visibility = 'visible'
     document.body.style.height = ''
     document.body.style.overflow = 'visible'
+
+    document.body.setAttribute("style", "visibility: visible; height: ''; overflow: visible")
+
 }
