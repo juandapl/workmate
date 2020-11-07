@@ -19,13 +19,26 @@ document.getElementById('start_workshift').addEventListener('click', function() 
     if (workShiftMinutes) workShiftDurationInMinutes += workShiftMinutes
 
     if (workShiftDurationInMinutes > 0) {
-        chrome.runtime.sendMessage({ message: 'START_TIMER', timerDuration: workShiftDurationInMinutes })
+        chrome.runtime.sendMessage({ message: 'START_WORKSHIFT', timerDuration: workShiftDurationInMinutes })
         displayRemainingWorkTime(workShiftDurationInMinutes)
         
         const newWorkshiftContainer = document.getElementsByClassName('new_workshift')[0]
         newWorkshiftContainer.classList.add('hide')
+        const workShiftStatusContainer = document.getElementsByClassName('workshift_running')[0]
+        workShiftStatusContainer.classList.remove('hide')
     } else { // user left the fields blank, show error 
         // todo
-        alert('error!!')
+        alert('error!! enter a workshift duration please')
     }
+})
+
+// when user clicks 'End Workshift'
+document.getElementById('end_workshift').addEventListener('click', function() {
+    chrome.runtime.sendMessage({ message: 'END_WORKSHIFT' })
+    displayRemainingWorkTime(0)
+
+    const newWorkshiftContainer = document.getElementsByClassName('new_workshift')[0]
+    newWorkshiftContainer.classList.remove('hide')
+    const workShiftStatusContainer = document.getElementsByClassName('workshift_running')[0]
+    workShiftStatusContainer.classList.add('hide')
 })

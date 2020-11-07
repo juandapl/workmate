@@ -3,7 +3,7 @@ let workShiftEndDate;
 let workShiftTimer;
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.message === 'START_TIMER') {
+    if (request.message === 'START_WORKSHIFT') {
         workShiftEndDate = new Date(Date.now() + request.timerDuration * 60 * 1000);
         workShiftTimer = setTimeout(() => {
             alert('time up')
@@ -12,7 +12,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse(true)
     } 
     else if (request.message === 'GET_REMAINING_TIME') {
-        if (!workShiftEndDate) { // Timer not starte
+        if (!workShiftEndDate) { // No current workshift
             sendResponse(null); 
             return
         }
@@ -23,5 +23,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (remainingTimeInSeconds < 0) remainingTimeInSeconds = 0;
 
         sendResponse(remainingTimeInSeconds)
+    }
+    else if (request.message === 'END_WORKSHIFT') {
+        if (!workShiftEndDate) { // No current workshift
+            sendResponse(null); 
+            return
+        }
+
+        workShiftEndDate = null;
+        clearTimeout(workShiftTimer)
+        workShiftTimer = null;
     }
 });
