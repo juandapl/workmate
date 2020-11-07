@@ -8,7 +8,7 @@ chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON'], res => {
         displayRunningWorkShift()
         
         const remainingTime = new Date(res.workShiftEndDateJSON).getTime() - Date.now()
-        const remainingTimeInMinutes = remainingTime / (60 * 1000)
+        let remainingTimeInMinutes = remainingTime / (60 * 1000)
 
         if (remainingTimeInMinutes < 0) remainingTimeInMinutes = 0;
         displayRemainingWorkTime(remainingTimeInMinutes)
@@ -41,4 +41,14 @@ document.getElementById('end_workshift').addEventListener('click', function() {
     chrome.runtime.sendMessage({ message: 'END_WORKSHIFT' })
     displayRemainingWorkTime(0)
     displayNewWorkShiftMenu()
+})
+
+// when user clicks 'Edit Blocked Pages'
+document.getElementById('edit_blocked_pages').addEventListener('click', function() {
+    chrome.runtime.openOptionsPage()
+})
+
+// when user clicks 'Block this page'
+document.getElementById('blacklist_page').addEventListener('click', function() {
+    chrome.runtime.sendMessage({ message: 'BLOCK_CURRENT_SITE'})
 })

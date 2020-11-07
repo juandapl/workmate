@@ -3,9 +3,6 @@ let workShiftEndDate;
 let workShiftTimer;
 
 function onWorkShiftEnd() {
-    if (!workShiftEndDate) { // No current workshift
-        return false
-    }
     chrome.storage.local.set({ inWorkShift: false })
     chrome.storage.local.remove('workShiftEndDateJSON')
 
@@ -17,8 +14,6 @@ function onWorkShiftEnd() {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    
-    console.log(request)
     if (request.message === 'START_WORKSHIFT') {
         workShiftEndDate = new Date(Date.now() + request.timerDuration * 60 * 1000);
         workShiftTimer = setTimeout(() => {
@@ -31,11 +26,29 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse(true)
     } 
     else if (request.message === 'END_WORKSHIFT') {
-        sendResponse(onWorkShiftEnd())
+        onWorkShiftEnd()
     }
     else if (request.message === 'CLOSE_CURRENT_TAB') {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
             chrome.tabs.remove(tabs[0].id, function() { });
+        });
+    }
+    else if (request.message === 'BLOCK_CURRENT_SITE') {
+        chrome.tabs.query({ active: true, currentWindow: true }, curTab => {
+            let currentSite = new URL(curTab[0].url)
+            let domainName = currentSite.hostname
+            if (domainName.split('.').length == 2) {
+                domainName = 'www.' + domainName
+            }
+            console.log('curTab', curTab)
+            chrome.tabs.sendMessage(curTab[0].id, { message: 'BLOCK_CURRENT_SITE' })
+
+            chrome.storage.local.get('blockList', res => {
+                if (res.blockList.includes(domainName)) return; // site already blacklisted...
+                newBlockList = res.blockList
+                newBlockList.push(domainName)
+                chrome.storage.local.set({ blockList: newBlockList })
+            })
         });
     }
 });
@@ -55,3 +68,8 @@ chrome.runtime.onStartup.addListener(() => {
         }
     })
 });
+
+// when the extension is first installed, we put the default blocklist into storage
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.storage.local.set({ blockList: defaultBlockList })
+})
