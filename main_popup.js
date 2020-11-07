@@ -23,8 +23,8 @@ document.getElementById('start_workshift').addEventListener('click', function() 
     const workShiftMinutes =  document.getElementById('total_minutes').value
 
     let workShiftDurationInMinutes = 0;
-    if (workShiftHours) workShiftDurationInMinutes += 60 * workShiftHours
-    if (workShiftMinutes) workShiftDurationInMinutes += workShiftMinutes
+    if (workShiftHours) workShiftDurationInMinutes += 60 * parseInt(workShiftHours)
+    if (workShiftMinutes) workShiftDurationInMinutes += parseInt(workShiftMinutes)
 
     if (workShiftDurationInMinutes > 0) {
         chrome.runtime.sendMessage({ message: 'START_WORKSHIFT', timerDuration: workShiftDurationInMinutes })
