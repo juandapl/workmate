@@ -8,10 +8,10 @@ chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON'], res => {
         displayRunningWorkShift()
         
         const remainingTime = new Date(res.workShiftEndDateJSON).getTime() - Date.now()
-        const remainingTimeInSeconds = remainingTime / (60 * 1000)
+        const remainingTimeInMinutes = remainingTime / (60 * 1000)
 
-        if (remainingTimeInSeconds < 0) remainingTimeInSeconds = 0;
-        displayRemainingWorkTime(remainingTimeInSeconds)
+        if (remainingTimeInMinutes < 0) remainingTimeInMinutes = 0;
+        displayRemainingWorkTime(remainingTimeInMinutes)
     } else {
         displayNewWorkShiftMenu()
     }
