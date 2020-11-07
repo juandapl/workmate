@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>WorkMate Blocklist</title>
+        <title>Workmate Blocklist</title>
+        <link rel="stylesheet" href="options.css">
     </head>
 <body>
-    <span>Enter your blocklist! Example: www.facebook.com</span>
-    <p>Enter 1 URL per line</p>
-    <textarea style="width:100%; height: 80vh; resize: none" id="blocklist_textarea"></textarea> 
+    <div class="mainContainer">
+        <img style="display: inline-block;" src="icons/angry_workmate_small.png" width="60" height="60">
+        <h1>Blocked sites list</h1>
+        <p>Enter URLs to block. (for example www.facebook.com)</p>
+        <p>Enter 1 URL per line below:</p>
+        <textarea id="blocklist_textarea"></textarea> 
+        <br>
+        <button id="save_button" class="purpinlinebutton">Save</button>
+        <button id="restore_defaults_button" class="redinlinebutton">Restore Defaults</button>
+        <div id="saved_text_container"></div>
 
-    <button id="save_button">Save</button>
-    <button id="restore_defaults_button">Restore Defaults</button>
-    <div id="saved_text_container"></div>
-
-    <script src="./js/constants/defaultBlockList.js"></script>
-    <script src="options.js"></script>
+        <script src="./js/constants/defaultBlockList.js"></script>
+        <script src="options.js"></script>
+    </div>
     </body>
 </html>
