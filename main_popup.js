@@ -1,13 +1,21 @@
 
 import displayRemainingWorkTime from './js/displayRemainingWorkTime.js'
+import { displayNewWorkShiftMenu, displayRunningWorkShift } from './js/toggleWorkShiftDisplay.js'
 
 // whenever popup is opened, request time left of current WorkShift ( if any, otherwise returns False )
-chrome.runtime.sendMessage({ message: 'GET_REMAINING_TIME' }, 
-    remainingTime => {
-        if (remainingTime) displayRemainingWorkTime(remainingTime)
-    }
-)
+chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON'], res => {
+    if (res.inWorkShift === true) {
+        displayRunningWorkShift()
+        
+        const remainingTime = new Date(res.workShiftEndDateJSON).getTime() - Date.now()
+        const remainingTimeInSeconds = remainingTime / (60 * 1000)
 
+        if (remainingTimeInSeconds < 0) remainingTimeInSeconds = 0;
+        displayRemainingWorkTime(remainingTimeInSeconds)
+    } else {
+        displayNewWorkShiftMenu()
+    }
+})
 
 // when user clicks 'Start Workshift'
 document.getElementById('start_workshift').addEventListener('click', function() {
@@ -21,11 +29,7 @@ document.getElementById('start_workshift').addEventListener('click', function() 
     if (workShiftDurationInMinutes > 0) {
         chrome.runtime.sendMessage({ message: 'START_WORKSHIFT', timerDuration: workShiftDurationInMinutes })
         displayRemainingWorkTime(workShiftDurationInMinutes)
-        
-        const newWorkshiftContainer = document.getElementsByClassName('new_workshift')[0]
-        newWorkshiftContainer.classList.add('hide')
-        const workShiftStatusContainer = document.getElementsByClassName('workshift_running')[0]
-        workShiftStatusContainer.classList.remove('hide')
+        displayRunningWorkShift()
     } else { // user left the fields blank, show error 
         // todo
         alert('error!! enter a workshift duration please')
@@ -36,9 +40,5 @@ document.getElementById('start_workshift').addEventListener('click', function() 
 document.getElementById('end_workshift').addEventListener('click', function() {
     chrome.runtime.sendMessage({ message: 'END_WORKSHIFT' })
     displayRemainingWorkTime(0)
-
-    const newWorkshiftContainer = document.getElementsByClassName('new_workshift')[0]
-    newWorkshiftContainer.classList.remove('hide')
-    const workShiftStatusContainer = document.getElementsByClassName('workshift_running')[0]
-    workShiftStatusContainer.classList.add('hide')
+    displayNewWorkShiftMenu()
 })

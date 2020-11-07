@@ -55,7 +55,7 @@ const HTML = `
 
 const curSite = window.location.hostname
 
-chrome.storage.local.get('inWorkShift', function(res) {
+chrome.storage.local.get('inWorkShift', res => {
     if (res.inWorkShift != true) return; // not in workshift mode
 
     if (bannedSiteList.includes(curSite)) {

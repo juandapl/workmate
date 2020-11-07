@@ -2,34 +2,34 @@
 let workShiftEndDate;
 let workShiftTimer;
 
+function onWorkShiftEnd() {
+    if (!workShiftEndDate) { // No current workshift
+        return false
+    }
+    chrome.storage.local.set({ inWorkShift: false })
+    chrome.storage.local.remove('workShiftEndDateJSON')
+
+    workShiftEndDate = null;
+    clearTimeout(workShiftTimer)
+    workShiftTimer = null;
+
+    return true
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.message === 'START_WORKSHIFT') {
         workShiftEndDate = new Date(Date.now() + request.timerDuration * 60 * 1000);
         workShiftTimer = setTimeout(() => {
-            alert('time up')
+            onWorkShiftEnd()
+            alert('Workshift over!!! Yay!')
         }, workShiftEndDate.getTime() - Date.now());
 
-        chrome.storage.local.set({ inWorkShift: true })
+        chrome.storage.local.set({ inWorkShift: true, workShiftEndDateJSON: workShiftEndDate.toJSON() })
 
         sendResponse(true)
     } 
-    else if (request.message === 'GET_REMAINING_TIME') {
-        if (!workShiftEndDate) { // No current workshift
-            sendResponse(null); 
-            return
-        }
-
-        const remainingTime = workShiftEndDate.getTime() - Date.now()
-        const remainingTimeInSeconds = remainingTime / (60 * 1000)
-
-        if (remainingTimeInSeconds < 0) remainingTimeInSeconds = 0;
-
-        sendResponse(remainingTimeInSeconds)
-    }
     else if (request.message === 'END_WORKSHIFT') {
-        if (!workShiftEndDate) { // No current workshift
-            sendResponse(null); 
-            return
+        sendResponse(onWorkShiftEnd())
         }
 
         chrome.storage.local.set({ inWorkShift: false })
