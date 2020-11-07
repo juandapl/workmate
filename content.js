@@ -55,18 +55,12 @@ const HTML = `
 
 const curSite = window.location.hostname
 
-console.log(window.location)
+chrome.storage.local.get('inWorkShift', function(res) {
+    if (res.inWorkShift != true) return; // not in workshift mode
 
-if (bannedSiteList.includes(curSite)) {
-    // const body = document.getElementsByTagName('body')[0]
-    // console.log(body)
-    // body.innerHTML(`<div class="Alert">
-    // <img class="Alert" src="icons/angry_workmate_small.png" width="250" height="250" >
-    // <p class="Alert"><b>Workmate blocked this website. Go back to work!</b></p>
-    // <input type="button" value="Close this page" class="purpinlinebutton" class="Alert">
-    // <input type="button" value="I really need to access. Let me in once." class="inlinebutton" class="Alert">
-    // </div>`)
-    document.open()
-    document.write(HTML)
-    document.close()
-}
+    if (bannedSiteList.includes(curSite)) {
+        document.open()
+        document.write(HTML)
+        document.close()
+    }
+})

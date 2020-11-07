@@ -9,6 +9,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             alert('time up')
         }, workShiftEndDate.getTime() - Date.now());
 
+        chrome.storage.local.set({ inWorkShift: true })
+
         sendResponse(true)
     } 
     else if (request.message === 'GET_REMAINING_TIME') {
@@ -29,6 +31,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse(null); 
             return
         }
+
+        chrome.storage.local.set({ inWorkShift: false })
 
         workShiftEndDate = null;
         clearTimeout(workShiftTimer)
