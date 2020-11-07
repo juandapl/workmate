@@ -3,8 +3,10 @@
     "name": "Workmate",
     "version": "1.0",
     "description": "Workmate blocks pages that affect your productivity, and lets you take back control of your time",
+    "options_page": "options.html",
     "background": {
         "scripts": [
+            "./js/constants/defaultBlockList.js",
             "background.js"
         ]
     },

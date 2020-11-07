@@ -8,7 +8,7 @@
         <img class="Alert" src="icons/angry_workmate_small.png" width="35" height="35"><h1>Workmate</h1>
         <div class="new_workshift">
             <h2>New Workshift</h2>
-            <input type="button" value="Edit Blocked Pages" class="greenbutton"> <!--Put the js function here using onclick once it is done-->     
+            <input type="button" id="edit_blocked_pages" value="Edit Blocked Pages" class="greenbutton"> <!--Put the js function here using onclick once it is done-->     
             <h2>Time?</h2>
             <div class= "internal">
                 <input type="number" id="total_hours" name="total_hours" placeholder="1"><span> hours</span><span> :</span>
@@ -48,7 +48,7 @@
                 <p class="timer" id="remainingTimeToBreak">00:00</p>
                 <p class="white" id="underTimerText">until next break</p>
             </div>
-            <input type="button" value="Blacklist this page" class="redbutton">
+            <input id="blacklist_page" type="button" value="Blacklist this page" class="redbutton">
             <input id="end_workshift" type="button" value="End Workshift" class="purpinlinebutton">
             <input type="button" value="Break now" class="purpinlinebutton">
         </div>
