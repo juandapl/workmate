@@ -21,6 +21,9 @@ document.getElementById('start_workshift').addEventListener('click', function() 
     if (workShiftDurationInMinutes > 0) {
         chrome.runtime.sendMessage({ message: 'START_TIMER', timerDuration: workShiftDurationInMinutes })
         displayRemainingWorkTime(workShiftDurationInMinutes)
+        
+        const newWorkshiftContainer = document.getElementsByClassName('new_workshift')[0]
+        newWorkshiftContainer.classList.add('hide')
     } else { // user left the fields blank, show error 
         // todo
         alert('error!!')
