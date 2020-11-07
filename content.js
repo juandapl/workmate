@@ -89,7 +89,7 @@ function unblockSite() {
 //This is the function that displays the break started/ended alerts, and the workshift ended alert.
 function TimeAlert(AlertType) { //alertType can be breakEnded, breakStarted, workshiftEnded.
     const modal = document.createElement('div');
-    modal.setAttribute("style", "visibility: visible; z-index: 9999; background: linear-gradient(180deg,rgba(45,15,66,1) 45%, rgba(39,145,100,1) 100%); width: 40vw; left: 20vw; top: 30vh; position: absolute; padding: 5vh;");
+    modal.setAttribute("style", "border-radius: 4px; visibility: visible; z-index: 9999; background: linear-gradient(180deg,rgba(45,15,66,1) 45%, rgba(39,145,100,1) 100%); width: 40vw; left: 20vw; top: 30vh; position: absolute; padding: 5vh;");
     modal.id = 'TimeAlert'
 
     const img = document.createElement('img');
@@ -133,8 +133,9 @@ function TimeAlert(AlertType) { //alertType can be breakEnded, breakStarted, wor
         const secondaryAction = document.createElement("button");
         secondaryAction.setAttribute("style", "background: none; color: white;padding: 16px 32px;font-family: 'Glacial Indifference', sans-serif;font-size: 12px;border: none;margin: auto; display: inline-block;text-decoration: underline;")
         secondaryAction.textContent = "Two more minutes, please!"
+        modal.appendChild(secondaryAction)
     }
-        
+    document.body.appendChild(modal)   
 
 }
 
