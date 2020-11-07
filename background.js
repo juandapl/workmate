@@ -30,12 +30,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } 
     else if (request.message === 'END_WORKSHIFT') {
         sendResponse(onWorkShiftEnd())
-        }
-
-        chrome.storage.local.set({ inWorkShift: false })
-
-        workShiftEndDate = null;
-        clearTimeout(workShiftTimer)
-        workShiftTimer = null;
     }
+});
+
+// on load, check if there were any prior workshifts ( scenario: user accidently closed their browser/crashed ) 
+chrome.runtime.onStartup.addListener(() => {
+    chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON'], res => {
+        if (res.inWorkShift !== true) return; // no previous workshift
+        
+        if (res.workShiftEndDateJSON.getTime() - Date.now() < 0) { // previous workshift already ended
+            onWorkShiftEnd() 
+        } else { // resume workshift
+            workShiftEndDate = new Date(res.workShiftEndDateJSON)
+            workShiftTimer = setTimeout(() => {
+                onWorkShiftEnd()
+            }, workShiftEndDate.getTime() - Date.now());
+        }
+    })
 });
