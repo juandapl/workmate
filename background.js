@@ -45,7 +45,7 @@ chrome.runtime.onStartup.addListener(() => {
     chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON'], res => {
         if (res.inWorkShift !== true) return; // no previous workshift
         
-        if (res.workShiftEndDateJSON.getTime() - Date.now() < 0) { // previous workshift already ended
+        if (new Date(res.workShiftEndDateJSON).getTime() - Date.now() < 0) { // previous workshift already ended
             onWorkShiftEnd() 
         } else { // resume workshift
             workShiftEndDate = new Date(res.workShiftEndDateJSON)
