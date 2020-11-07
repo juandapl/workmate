@@ -17,6 +17,8 @@ function onWorkShiftEnd() {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    
+    console.log(request)
     if (request.message === 'START_WORKSHIFT') {
         workShiftEndDate = new Date(Date.now() + request.timerDuration * 60 * 1000);
         workShiftTimer = setTimeout(() => {
@@ -30,6 +32,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     } 
     else if (request.message === 'END_WORKSHIFT') {
         sendResponse(onWorkShiftEnd())
+    }
+    else if (request.message === 'CLOSE_CURRENT_TAB') {
+        chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+            chrome.tabs.remove(tabs[0].id, function() { });
+        });
     }
 });
 
