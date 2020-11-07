@@ -87,8 +87,6 @@ p.white {
     text-align: center
 }
 
-
-
 input.purpbutton{
     background-color: rgba(45,15,66,1);
     color: white;
@@ -164,3 +162,6 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
+.hide {
+    display: none;
+}
