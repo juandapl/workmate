@@ -40,7 +40,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             if (domainName.split('.').length == 2) {
                 domainName = 'www.' + domainName
             }
-            console.log('curTab', curTab)
             chrome.tabs.sendMessage(curTab[0].id, { message: 'BLOCK_CURRENT_SITE' })
 
             chrome.storage.local.get('blockList', res => {
