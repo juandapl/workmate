@@ -21,7 +21,7 @@
         
       }],
     "browser_action": {
-        "default_icon": "icons/angry_workmate_small.png",
+        "default_icon": "icons/angry_workmate_taskbar.png",
         "default_title": "Workmate",
         "default_popup": "main_popup.html"
     },
