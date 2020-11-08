@@ -6,8 +6,9 @@ let workTimeTimer;
 let nextBreakTimer;
 
 function getHoursAndMinutes(timeLeft) {
-    let hours = parseInt(timeLeft / 60, 10);
-    let minutes = parseInt(timeLeft % 60, 10);
+    console.log('timeleft', timeLeft )
+    let hours = parseInt(timeLeft / (60 * 60 * 1000), 10);
+    let minutes = parseInt((timeLeft % (60 * 60 * 1000)) / (60 * 1000), 10);
 
     hours = hours < 10 ? "0" + hours : hours;
     minutes = minutes < 10 ? "0" + minutes : minutes;
@@ -40,8 +41,11 @@ function callFunctionOncePerMinuteFor({ fnc, time, firstTickDelay }) {
 }
 
 function displayRemainingWorkTime(duration) {
+    if (duration < 0) {
+        duration = 0
+    }
     let time = duration;
-    let firstTickDelay = (duration % 1) * 1000 * 60 // grab the seconds part of the duration
+    let firstTickDelay = (duration % (60 * 1000)) // grab the seconds part of the duration
     displayWorkTimeLeft(time)
 
     clearTimeout(workTimeTimer)
@@ -49,8 +53,11 @@ function displayRemainingWorkTime(duration) {
 }
 
 function displayRemainingTimeToBreak(duration) {
+    if (duration < 0) {
+        duration = 0
+    }
     let time = duration;
-    let firstTickDelay = (duration % 1) * 1000 * 60 // grab the seconds part of the duration
+    let firstTickDelay = (duration % (60 * 1000)) // grab the seconds part of the duration
     displayTimeLeftToBreak(time)
 
     clearTimeout(nextBreakTimer)

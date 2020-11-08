@@ -30,7 +30,7 @@ function onBreakStart(duration) {
     clearTimeout(nextBreakTimer)
     nextBreakTimer = null;
 
-    breakEndDate = new Date(Date.now() + duration * 60 * 1000);
+    breakEndDate = new Date(Date.now() + duration);
     breakEndTimer = setTimeout(() => {
         onBreakEnd()
         alert('Break ended!')
@@ -44,7 +44,7 @@ function onBreakEnd() {
     clearTimeout(breakEndTimer)
     breakEndTimer = null;
 
-    nextBreakDate = new Date(Date.now() + request.breakGap * 60 * 1000);
+    nextBreakDate = new Date(Date.now() + request.breakGap);
     nextBreakTimer = setTimeout(() => {
         onBreakStart(request.breakDuration)
         alert('Break time!')
@@ -53,14 +53,14 @@ function onBreakEnd() {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.message === 'START_WORKSHIFT') {
-        workShiftEndDate = new Date(Date.now() + request.workShiftDuration * 60 * 1000);
+        workShiftEndDate = new Date(Date.now() + request.workShiftDuration);
         workShiftTimer = setTimeout(() => {
             onWorkShiftEnd()
             alert('Workshift over!!! Yay!')
         }, workShiftEndDate.getTime() - Date.now());
 
         if (request.isBreakEnabled) {
-            nextBreakDate = new Date(Date.now() + request.breakGap * 60 * 1000);
+            nextBreakDate = new Date(Date.now() + request.breakGap);
             nextBreakTimer = setTimeout(() => {
                 onBreakStart(request.breakDuration)
                 alert('Break time!')

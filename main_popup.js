@@ -15,17 +15,11 @@ chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON', 'nextBreakDateJ
 
         if (res.nextBreakDateJSON) {
             const remainingTimeToBreak = new Date(res.nextBreakDateJSON).getTime() - Date.now()
-            let remainingTimeToBreakInMinutes = remainingTimeToBreak / (60 * 1000)
-    
-            if (remainingTimeToBreakInMinutes < 0) remainingTimeToBreakInMinutes = 0;
-            displayRemainingTimeToBreak(remainingTimeToBreakInMinutes)
+            displayRemainingTimeToBreak(remainingTimeToBreak)
         }
         
         const remainingTime = new Date(res.workShiftEndDateJSON).getTime() - Date.now()
-        let remainingTimeInMinutes = remainingTime / (60 * 1000)
-
-        if (remainingTimeInMinutes < 0) remainingTimeInMinutes = 0;
-        displayRemainingWorkTime(remainingTimeInMinutes)
+        displayRemainingWorkTime(remainingTime)
 
         
     } else {
@@ -51,21 +45,23 @@ document.getElementById('start_workshift').addEventListener('click', function() 
     const breakHours = document.getElementById('gap_hours').value
     const breakMinutes = document.getElementById('gap_minutes').value
 
-    let workShiftDurationInMinutes = 0;
-    if (workShiftHours) workShiftDurationInMinutes += 60 * parseInt(workShiftHours)
-    if (workShiftMinutes) workShiftDurationInMinutes += parseInt(workShiftMinutes)
+    let workShiftDurationInMilliseconds = 0;
+    if (workShiftHours) workShiftDurationInMilliseconds += 60 * 60 * 1000 * parseInt(workShiftHours)
+    if (workShiftMinutes) workShiftDurationInMilliseconds += 60 * 1000 * parseInt(workShiftMinutes)
 
     let timeLeftToBreak = 0;
-    if (breakHours) timeLeftToBreak += 60 * parseInt(breakHours)
-    if (breakMinutes) timeLeftToBreak += parseInt(breakMinutes)
+    if (breakHours) timeLeftToBreak += 60 * 60 * 1000 * parseInt(breakHours)
+    if (breakMinutes) timeLeftToBreak += 60 * 1000 * parseInt(breakMinutes)
 
-    if (workShiftDurationInMinutes > 0) {
+    console.log(workShiftDurationInMilliseconds, timeLeftToBreak)
+
+    if (workShiftDurationInMilliseconds > 0) {
         playSound("./sounds/workshift_start.mp3")
         
         if (isBreakEnabled()) {
             chrome.runtime.sendMessage({ 
                 message: 'START_WORKSHIFT',
-                workShiftDuration: workShiftDurationInMinutes,
+                workShiftDuration: workShiftDurationInMilliseconds,
                 isBreakEnabled: true,
                 breakDuration,
                 breakGap: timeLeftToBreak,
@@ -73,12 +69,12 @@ document.getElementById('start_workshift').addEventListener('click', function() 
         } else {
             chrome.runtime.sendMessage({ 
                 message: 'START_WORKSHIFT',
-                workShiftDuration: workShiftDurationInMinutes,
+                workShiftDuration: workShiftDurationInMilliseconds,
                 isBreakEnabled: false
             })
         }
     
-        displayRemainingWorkTime(workShiftDurationInMinutes)
+        displayRemainingWorkTime(workShiftDurationInMilliseconds)
         displayRunningWorkShift()
     } else { // user left the fields blank, show error 
         // todo
