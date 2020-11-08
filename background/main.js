@@ -8,9 +8,9 @@ let nextBreakTimer;
 let breakEndDate;
 let breakEndTimer;
 
-const alertUser = ({ text, title, buttonText }) => {
+const alertUser = (alertType) => {
     chrome.tabs.query({ active: true, currentWindow: true }, curTab => {
-        chrome.tabs.sendMessage(curTab[0].id, { message: 'ALERT_USER', text, title, buttonText })
+        chrome.tabs.sendMessage(curTab[0].id, { message: 'ALERT_USER', alertType })
     })
 }
 
@@ -20,6 +20,12 @@ const playSound = (soundURL) => {
 }
 
 function onWorkShiftEnd() {
+
+function onWorkShiftEnd({ silent = false } = { silent: false }) {
+    if (!silent) {
+        alertUser('workshiftEnded')
+        playSound("./sounds/break_start_end.mp3")
+    }
     chrome.storage.local.set({ inWorkShift: false })
     chrome.storage.local.remove(['workShiftEndDateJSON', 'nextBreakDateJSON', 'inBreak', 'breakDuration', 'breakGap'])
     chrome.runtime.sendMessage({ message: 'END_WORKSHIFT '})
@@ -30,21 +36,27 @@ function onWorkShiftEnd() {
 
 function onBreakStart({ duration, gap }) {
     chrome.runtime.sendMessage({ message: 'START_BREAK', duration })
+        alertUser('breakStarted')
+        playSound("./sounds/break_start_end.mp3")
+    }
     clearNextBreakTimer()
 
     breakEndDate = new Date(Date.now() + duration);
     breakEndTimer = setTimeout(() => {
         onBreakEnd({ duration: duration, gap: gap })
-        alertUser({ text: 'Back to work', title: 'Break Ended', buttonText: 'Okay' })
-        playSound("./sounds/break_start_end.mp3")
     }, breakEndDate.getTime() - Date.now());
 
     chrome.storage.local.set({ inWorkShift: false, inBreak: true , breakEndDateJSON: breakEndDate.toJSON() })
     chrome.storage.local.remove('nextBreakDateJSON')
 }
 
-function onBreakEnd({ duration, gap }) {
+function onBreakEnd({ duration, gap, silent = false }) {
     chrome.runtime.sendMessage({ message: 'END_BREAK', timeLeftToBreak: gap })
+    blockAllBlockedSites()
+    if (!silent) {
+        alertUser('breakEnded')
+        playSound("./sounds/break_start_end.mp3")
+    }
     clearBreakEndTimer()
 
     nextBreakDate = new Date(Date.now() + gap);
@@ -63,7 +75,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         workShiftEndDate = new Date(Date.now() + request.workShiftDuration);
         workShiftTimer = setTimeout(() => {
             onWorkShiftEnd()
-            alertUser({ text: 'Good job!', title: 'Workshift Over', buttonText: 'Awesome!' })
         }, workShiftEndDate.getTime() - Date.now());
 
         if (request.isBreakEnabled) {
@@ -95,16 +106,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     else if (request.message === 'START_BREAK') {
         chrome.storage.local.get(['breakDuration','breakGap'], res => {
             if (res.breakDuration && res.breakGap) {
-                onBreakStart({ duration: res.breakDuration, gap: res.breakGap })
+                onBreakStart({ duration: res.breakDuration, gap: res.breakGap, silent: true })
             }
         })
     }
     else if (request.message === 'END_BREAK') {
         chrome.storage.local.get(['breakDuration','breakGap'], res => {
             if (res.breakDuration && res.breakGap) {
-                onBreakEnd({ duration: res.breakDuration, gap: res.breakGap })
+                onBreakEnd({ duration: res.breakDuration, gap: res.breakGap, silent: true })
             }
         })
+    }
+    else if (request.message === 'SNOOZE_BREAK') {
+        breakEndDate = new Date(Date.now() + 2 * 60 * 1000);
+        breakEndTimer = setTimeout(() => {
+            onBreakEnd({ duration: duration, gap: gap })
+        }, breakEndDate.getTime() - Date.now());
+    
+        clearNextBreakTimer()
+        chrome.storage.local.set({ inWorkShift: false, inBreak: true , breakEndDateJSON: breakEndDate.toJSON() })
+        chrome.storage.local.remove('nextBreakDateJSON')
+        chrome.runtime.sendMessage({ message: 'START_BREAK', duration: 2 * 60 * 1000 })
     }
     else if (request.message === 'CLOSE_CURRENT_TAB') {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
@@ -137,7 +159,7 @@ chrome.runtime.onStartup.addListener(() => {
 
         // check if previous workshift has ended
         if (res.workShiftEndDate && new Date(res.workShiftEndDateJSON).getTime() - Date.now() < 0) { 
-            onWorkShiftEnd() 
+            onWorkShiftEnd({ silent: true }) 
             return
         } else { // resume workshift
             workShiftEndDate = new Date(res.workShiftEndDateJSON)
@@ -150,16 +172,12 @@ chrome.runtime.onStartup.addListener(() => {
             if (new Date(res.breakEndDateJSON).getTime() - Date.now() < 0) { // break has ended
                 nextBreakDate = new Date(Date.now() + res.breakGap); // start a new break countdown from scratch
                 nextBreakTimer = setTimeout(() => { 
-                    onBreakStart({ duration: duration, gap: gap })
-                    alertUser({ text: 'Take a breather', title: 'Break Time!', buttonText: 'Okay' })
-                    playSound("./sounds/break_start_end.mp3")
+                    onBreakStart({ duration: duration, gap: gap, silent: true })
                 }, nextBreakDate.getTime() - Date.now());
             } else { // user is still in break
                 breakEndDate = new Date(res.breakEndDateJSON);
                 breakEndTimer = setTimeout(() => {
-                    onBreakEnd({ duration: duration, gap: gap })
-                    alertUser({ text: 'Back to work', title: 'Break Ended', buttonText: 'Okay' })
-                    playSound("./sounds/break_start_end.mp3")
+                    onBreakEnd({ duration: duration, gap: gap, silent: true })
                 }, breakEndDate.getTime() - Date.now());
             }
         } else { // they are not currently in break
@@ -171,14 +189,13 @@ chrome.runtime.onStartup.addListener(() => {
                 }
                 nextBreakTimer = setTimeout(() => { 
                     onBreakStart({ duration: duration, gap: gap })
-                    alertUser({ text: 'Take a breather', title: 'Break Time!', buttonText: 'Okay' })
-                    playSound("./sounds/break_start_end.mp3")
                 }, nextBreakDate.getTime() - Date.now());
             }
         }
         
     })
 });
+
 
 // when the extension is first installed, we put the default blocklist into storage
 chrome.runtime.onInstalled.addListener(() => {
