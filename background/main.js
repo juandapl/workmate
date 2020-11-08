@@ -19,7 +19,31 @@ const playSound = (soundURL) => {
     audio.play();
 }
 
-function onWorkShiftEnd() {
+const unblockAllSites = () => {
+    chrome.tabs.query({} , allTabs => {
+        allTabs.forEach(curTab => {
+            chrome.tabs.sendMessage(curTab.id, { message: 'UNBLOCK_CURRENT_SITE' })
+        })
+    })
+}
+
+const blockAllBlockedSites = () => {
+    chrome.storage.local.get('blockList', res => {
+        chrome.tabs.query({} , allTabs => {
+            allTabs.forEach(curTab => {
+                let currentSite = new URL(curTab.url)
+                let domainName = currentSite.hostname
+                if (domainName.split('.').length == 2) {
+                    domainName = 'www.' + domainName
+                }
+
+                if (res.blockList.includes(domainName)) {
+                    chrome.tabs.sendMessage(curTab.id, { message: 'BLOCK_CURRENT_SITE' })
+                }
+            })
+        })
+    })
+}
 
 function onWorkShiftEnd({ silent = false } = { silent: false }) {
     if (!silent) {
@@ -30,12 +54,15 @@ function onWorkShiftEnd({ silent = false } = { silent: false }) {
     chrome.storage.local.remove(['workShiftEndDateJSON', 'nextBreakDateJSON', 'inBreak', 'breakDuration', 'breakGap'])
     chrome.runtime.sendMessage({ message: 'END_WORKSHIFT '})
     clearAllTimers()
+    unblockAllSites()
 
     return true
 }
 
-function onBreakStart({ duration, gap }) {
+function onBreakStart({ duration, gap, silent = false}) {
     chrome.runtime.sendMessage({ message: 'START_BREAK', duration })
+    unblockAllSites()
+    if (!silent) {
         alertUser('breakStarted')
         playSound("./sounds/break_start_end.mp3")
     }
@@ -92,6 +119,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             })
         }
 
+        blockAllBlockedSites()
         playSound("./sounds/workshift_start.mp3")
         chrome.storage.local.set({ 
             inWorkShift: true, 
@@ -127,6 +155,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.storage.local.set({ inWorkShift: false, inBreak: true , breakEndDateJSON: breakEndDate.toJSON() })
         chrome.storage.local.remove('nextBreakDateJSON')
         chrome.runtime.sendMessage({ message: 'START_BREAK', duration: 2 * 60 * 1000 })
+        unblockAllSites()
     }
     else if (request.message === 'CLOSE_CURRENT_TAB') {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
