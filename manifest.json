@@ -7,12 +7,16 @@
     "background": {
         "scripts": [
             "./js/constants/defaultBlockList.js",
-            "background.js"
+            "./background/clearTimers.js",
+            "./background/main.js"
         ]
     },
     "permissions": [ "activeTab", "storage" ],
     "content_scripts": [{
-        "js": ["content.js"],
+        "js": [
+            "./js/showAlert.js", 
+            "content.js"
+        ],
         "matches": ["http://*/*", "https://*/*"]
         
       }],

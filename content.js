@@ -14,9 +14,12 @@ chrome.storage.local.get(['inWorkShift', 'blockList'], res => {
 
 //todo here add the listener to execute timealert? maybe?
 
-
 chrome.runtime.onMessage.addListener((request) => {
     if (request.message === 'BLOCK_CURRENT_SITE') blockSite();
+    if (request.message === 'ALERT_USER') {
+        const { text, title, buttonText } = request
+        showAlert({ text, title, buttonText })
+    }
 })
 
 function blockSite() {

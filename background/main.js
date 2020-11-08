@@ -8,6 +8,12 @@ let nextBreakTimer;
 let breakEndDate;
 let breakEndTimer;
 
+const alertUser = ({ text, title }) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, curTab => {
+        chrome.tabs.sendMessage(curTab[0].id, { message: 'ALERT_USER', text, title })
+    })
+}
+
 const playSound = (soundURL) => {
     var audio = new Audio(chrome.runtime.getURL(soundURL));
     audio.play();
@@ -16,18 +22,7 @@ const playSound = (soundURL) => {
 function onWorkShiftEnd() {
     chrome.storage.local.set({ inWorkShift: false })
     chrome.storage.local.remove(['workShiftEndDateJSON', 'nextBreakDateJSON', 'inBreak'])
-
-    workShiftEndDate = null;
-    clearTimeout(workShiftTimer)
-    workShiftTimer = null;
-    
-    nextBreakDate = null;
-    clearTimeout(nextBreakTimer)
-    nextBreakTimer = null;
-
-    breakEndDate = null;
-    clearTimeout(breakEndTimer)
-    breakEndTimer = null;
+    clearAllTimers()
 
     return true
 }
@@ -36,15 +31,12 @@ function onBreakStart({ duration, gap }) {
     playSound("./sounds/break_start_end.mp3")
     chrome.storage.local.set({ inWorkShift: false, inBreak: true })
     chrome.runtime.sendMessage({ message: 'START_BREAK', duration })
-
-    nextBreakDate = null;
-    clearTimeout(nextBreakTimer)
-    nextBreakTimer = null;
+    clearNextBreakTimer()
 
     breakEndDate = new Date(Date.now() + duration);
     breakEndTimer = setTimeout(() => {
         onBreakEnd({ duration: duration, gap: gap })
-        alert('Break end!')
+        alertUser({ text: 'Back to work', title: 'Break Ended', buttonText: 'Okay' })
     }, breakEndDate.getTime() - Date.now());
 }
 
@@ -52,15 +44,12 @@ function onBreakEnd({ duration, gap }) {
     playSound("./sounds/break_start_end.mp3")
     chrome.storage.local.set({ inWorkShift: true, inBreak: false })
     chrome.runtime.sendMessage({ message: 'END_BREAK' })
-
-    breakEndDate = null;
-    clearTimeout(breakEndTimer)
-    breakEndTimer = null;
+    clearBreakEndTimer()
 
     nextBreakDate = new Date(Date.now() + gap);
     nextBreakTimer = setTimeout(() => {
         onBreakStart({ duration: duration, gap: gap })
-        alert('Back to work!')
+        alertUser({ text: 'Take a breather', title: 'Break Time!', buttonText: 'Okay' })
     }, nextBreakDate.getTime() - Date.now());
 }
 
@@ -69,14 +58,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         workShiftEndDate = new Date(Date.now() + request.workShiftDuration);
         workShiftTimer = setTimeout(() => {
             onWorkShiftEnd()
-            alert('Workshift over!!! Yay!')
+            alertUser({ text: 'Good job!', title: 'Workshift Over', buttonText: 'Awesome!' })
         }, workShiftEndDate.getTime() - Date.now());
 
         if (request.isBreakEnabled) {
             nextBreakDate = new Date(Date.now() + request.breakGap);
             nextBreakTimer = setTimeout(() => {
                 onBreakStart({ duration: request.breakDuration, gap: request.breakGap })
-                alert('Break time!')
+                alertUser({ text: 'Take a breather', title: 'Break Time!', buttonText: 'Okay' })
             }, nextBreakDate.getTime() - Date.now());
 
             chrome.storage.local.set({ nextBreakDateJSON: nextBreakDate.toJSON() })
@@ -120,7 +109,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
-// on load, check if there were any prior workshifts ( scenario: user accidently closed their browser/crashed ) 
+// on chrome startup, check if there were any prior workshifts ( scenario: user accidently closed their browser/crashed ) 
 chrome.runtime.onStartup.addListener(() => {
     chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON'], res => {
         if (res.inWorkShift !== true) return; // no previous workshift

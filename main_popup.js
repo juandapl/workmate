@@ -1,7 +1,6 @@
 
 import { displayNewWorkShiftMenu, displayBreakTime, displayRunningWorkShift } from './js/toggleWorkShiftDisplay.js'
 import { setBreakOption, isBreakEnabled } from './js/popup_break_input.js'
-import showAlert from './js/showAlert.js'
 
 // whenever popup is opened, get state of app from chrome storage
 chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON', 'nextBreakDateJSON', 'inBreak'], res => {
@@ -75,7 +74,7 @@ document.getElementById('start_workshift').addEventListener('click', function() 
         displayRunningWorkShift({ workTimeLeft: workShiftDurationInMilliseconds, timeLeftToBreak })
     } else { // user left the fields blank, show error 
         // todo
-        showAlert({ text: 'Please enter a workshift duration.', title: 'Error!' })
+        showAlert({ text: 'Please enter a workshift duration.', title: 'Error!', buttonText: 'Try again' })
     }
 })
 
