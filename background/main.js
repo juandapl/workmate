@@ -45,7 +45,7 @@ const blockAllBlockedSites = () => {
     })
 }
 
-function onWorkShiftEnd({ silent = false } = { silent: false }) {
+function onWorkShiftEnd({ silent = false } = {}) {
     if (!silent) {
         alertUser('workshiftEnded')
         playSound("./sounds/break_start_end.mp3")
@@ -59,7 +59,7 @@ function onWorkShiftEnd({ silent = false } = { silent: false }) {
     return true
 }
 
-function onBreakStart({ duration, gap, silent = false}) {
+function onBreakStart({ duration, gap, silent = false }) {
     chrome.runtime.sendMessage({ message: 'START_BREAK', duration })
     unblockAllSites()
     if (!silent) {
