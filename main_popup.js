@@ -18,6 +18,15 @@ chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON'], res => {
     }
 })
 
+const saveWorkShiftSettings = () => {
+
+}
+
+const playSound = (soundURL) => {
+    var audio = new Audio(chrome.runtime.getURL(soundURL));
+    audio.play();
+}
+
 // when user clicks 'Start Workshift'
 document.getElementById('start_workshift').addEventListener('click', function() {
     const workShiftHours = document.getElementById('total_hours').value
@@ -28,12 +37,13 @@ document.getElementById('start_workshift').addEventListener('click', function() 
     if (workShiftMinutes) workShiftDurationInMinutes += parseInt(workShiftMinutes)
 
     if (workShiftDurationInMinutes > 0) {
-        chrome.runtime.sendMessage({ message: 'START_WORKSHIFT', timerDuration: workShiftDurationInMinutes })
+        playSound("./sounds/workshift_start.mp3")
+        chrome.runtime.sendMessage({ message: 'START_WORKSHIFT', workShiftDuration: workShiftDurationInMinutes })
         displayRemainingWorkTime(workShiftDurationInMinutes)
         displayRunningWorkShift()
     } else { // user left the fields blank, show error 
         // todo
-        showAlert("Please enter a workshift duration.")
+        showAlert({ text: 'Please enter a workshift duration.', title: 'Error!' })
     }
 })
 
