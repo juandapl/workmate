@@ -8,6 +8,11 @@ let nextBreakTimer;
 let breakEndDate;
 let breakEndTimer;
 
+const playSound = (soundURL) => {
+    var audio = new Audio(chrome.runtime.getURL(soundURL));
+    audio.play();
+}
+
 function onWorkShiftEnd() {
     chrome.storage.local.set({ inWorkShift: false })
     chrome.storage.local.remove(['workShiftEndDateJSON', 'nextBreakDateJSON', 'inBreak'])
@@ -28,8 +33,9 @@ function onWorkShiftEnd() {
 }
 
 function onBreakStart({ duration, gap }) {
-    chrome.storage.local.set({ inBreak: true })
-    chrome.runtime.sendMessage({ message: 'START_BREAK' })
+    playSound("./sounds/break_start_end.mp3")
+    chrome.storage.local.set({ inWorkShift: false, inBreak: true })
+    chrome.runtime.sendMessage({ message: 'START_BREAK', duration })
 
     nextBreakDate = null;
     clearTimeout(nextBreakTimer)
@@ -37,13 +43,14 @@ function onBreakStart({ duration, gap }) {
 
     breakEndDate = new Date(Date.now() + duration);
     breakEndTimer = setTimeout(() => {
-        onBreakEnd({ duration, gap })
+        onBreakEnd({ duration: duration, gap: gap })
         alert('Break end!')
     }, breakEndDate.getTime() - Date.now());
 }
 
 function onBreakEnd({ duration, gap }) {
-    chrome.storage.local.set({ inBreak: false })
+    playSound("./sounds/break_start_end.mp3")
+    chrome.storage.local.set({ inWorkShift: true, inBreak: false })
     chrome.runtime.sendMessage({ message: 'END_BREAK' })
 
     breakEndDate = null;
@@ -52,7 +59,7 @@ function onBreakEnd({ duration, gap }) {
 
     nextBreakDate = new Date(Date.now() + gap);
     nextBreakTimer = setTimeout(() => {
-        onBreakStart({ duration, gap })
+        onBreakStart({ duration: duration, gap: gap })
         alert('Back to work!')
     }, nextBreakDate.getTime() - Date.now());
 }
@@ -75,6 +82,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             chrome.storage.local.set({ nextBreakDateJSON: nextBreakDate.toJSON() })
         }
 
+        playSound("./sounds/workshift_start.mp3")
         chrome.storage.local.set({ 
             inWorkShift: true, 
             workShiftEndDateJSON: workShiftEndDate.toJSON() 

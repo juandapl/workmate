@@ -1,5 +1,4 @@
 
-import { displayRemainingWorkTime, displayRemainingTimeToBreak } from './js/displayRemainingTime.js'
 import { displayNewWorkShiftMenu, displayBreakTime, displayRunningWorkShift } from './js/toggleWorkShiftDisplay.js'
 import { setBreakOption, isBreakEnabled } from './js/popup_break_input.js'
 import showAlert from './js/showAlert.js'
@@ -7,29 +6,24 @@ import showAlert from './js/showAlert.js'
 // whenever popup is opened, get state of app from chrome storage
 chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON', 'nextBreakDateJSON', 'inBreak'], res => {
     if (res.inWorkShift === true) {
-        if (res.inBreak === true) {
-            displayBreakTime()
-            return
-        }
-        displayRunningWorkShift()
+        let remainingTimeToBreak
+        const remainingTime = new Date(res.workShiftEndDateJSON).getTime() - Date.now()
 
         if (res.nextBreakDateJSON) {
-            const remainingTimeToBreak = new Date(res.nextBreakDateJSON).getTime() - Date.now()
-            displayRemainingTimeToBreak(remainingTimeToBreak)
+            remainingTimeToBreak = new Date(res.nextBreakDateJSON).getTime() - Date.now()
         }
-        
-        const remainingTime = new Date(res.workShiftEndDateJSON).getTime() - Date.now()
-        displayRemainingWorkTime(remainingTime)
 
-        
-    } else {
+        displayRunningWorkShift({ workTimeLeft: remainingTime, timeLeftToBreak: remainingTimeToBreak})
+    } else if (res.inBreak === true) 
+        displayBreakTime()
+    else {
         displayNewWorkShiftMenu()
     }
 })
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.message === 'START_BREAK') {
-        displayBreakTime()
+        displayBreakTime(request.duration)
     }
     if (request.message === 'END_BREAK') {
         displayRunningWorkShift()
@@ -38,11 +32,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 const saveWorkShiftSettings = () => {
 
-}
-
-const playSound = (soundURL) => {
-    var audio = new Audio(chrome.runtime.getURL(soundURL));
-    audio.play();
 }
 
 // when user clicks 'Start Workshift'
@@ -66,7 +55,6 @@ document.getElementById('start_workshift').addEventListener('click', function() 
     console.log(workShiftDurationInMilliseconds, timeLeftToBreak)
 
     if (workShiftDurationInMilliseconds > 0) {
-        playSound("./sounds/workshift_start.mp3")
         
         if (isBreakEnabled()) {
             chrome.runtime.sendMessage({ 
@@ -84,9 +72,7 @@ document.getElementById('start_workshift').addEventListener('click', function() 
             })
         }
     
-        displayRemainingWorkTime(workShiftDurationInMilliseconds)
-        displayRemainingTimeToBreak(timeLeftToBreak)
-        displayRunningWorkShift()
+        displayRunningWorkShift({ workTimeLeft: workShiftDurationInMilliseconds, timeLeftToBreak })
     } else { // user left the fields blank, show error 
         // todo
         showAlert({ text: 'Please enter a workshift duration.', title: 'Error!' })
@@ -96,7 +82,6 @@ document.getElementById('start_workshift').addEventListener('click', function() 
 // when user clicks 'End Workshift'
 document.getElementById('end_workshift').addEventListener('click', function() {
     chrome.runtime.sendMessage({ message: 'END_WORKSHIFT' })
-    displayRemainingWorkTime(0)
     displayNewWorkShiftMenu()
 })
 
