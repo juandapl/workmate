@@ -1,19 +1,33 @@
 
-import displayRemainingWorkTime from './js/displayRemainingWorkTime.js'
-import { displayNewWorkShiftMenu, displayRunningWorkShift } from './js/toggleWorkShiftDisplay.js'
+import { displayRemainingWorkTime, displayRemainingTimeToBreak } from './js/displayRemainingTime.js'
+import { displayNewWorkShiftMenu, displayBreakTime, displayRunningWorkShift } from './js/toggleWorkShiftDisplay.js'
 import { setBreakOption, isBreakEnabled } from './js/popup_break_input.js'
 import showAlert from './js/showAlert.js'
 
-// whenever popup is opened, request time left of current WorkShift ( if any, otherwise returns False )
-chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON'], res => {
+// whenever popup is opened, get state of app from chrome storage
+chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON', 'nextBreakDateJSON', 'inBreak'], res => {
     if (res.inWorkShift === true) {
+        if (res.inBreak === true) {
+            displayBreakTime()
+            return
+        }
         displayRunningWorkShift()
+
+        if (res.nextBreakDateJSON) {
+            const remainingTimeToBreak = new Date(res.nextBreakDateJSON).getTime() - Date.now()
+            let remainingTimeToBreakInMinutes = remainingTimeToBreak / (60 * 1000)
+    
+            if (remainingTimeToBreakInMinutes < 0) remainingTimeToBreakInMinutes = 0;
+            displayRemainingTimeToBreak(remainingTimeToBreakInMinutes)
+        }
         
         const remainingTime = new Date(res.workShiftEndDateJSON).getTime() - Date.now()
         let remainingTimeInMinutes = remainingTime / (60 * 1000)
 
         if (remainingTimeInMinutes < 0) remainingTimeInMinutes = 0;
         displayRemainingWorkTime(remainingTimeInMinutes)
+
+        
     } else {
         displayNewWorkShiftMenu()
     }
@@ -47,10 +61,23 @@ document.getElementById('start_workshift').addEventListener('click', function() 
 
     if (workShiftDurationInMinutes > 0) {
         playSound("./sounds/workshift_start.mp3")
-        chrome.runtime.sendMessage({ 
-            message: 'START_WORKSHIFT',
-            workShiftDuration: workShiftDurationInMinutes 
-        })
+        
+        if (isBreakEnabled()) {
+            chrome.runtime.sendMessage({ 
+                message: 'START_WORKSHIFT',
+                workShiftDuration: workShiftDurationInMinutes,
+                isBreakEnabled: true,
+                breakDuration,
+                breakGap: timeLeftToBreak,
+            })
+        } else {
+            chrome.runtime.sendMessage({ 
+                message: 'START_WORKSHIFT',
+                workShiftDuration: workShiftDurationInMinutes,
+                isBreakEnabled: false
+            })
+        }
+    
         displayRemainingWorkTime(workShiftDurationInMinutes)
         displayRunningWorkShift()
     } else { // user left the fields blank, show error 

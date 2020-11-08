@@ -5,15 +5,50 @@ let workShiftTimer;
 let nextBreakDate;
 let nextBreakTimer;
 
+let breakEndDate;
+let breakEndTimer;
+
 function onWorkShiftEnd() {
     chrome.storage.local.set({ inWorkShift: false })
-    chrome.storage.local.remove('workShiftEndDateJSON')
+    chrome.storage.local.remove(['workShiftEndDateJSON', 'nextBreakDateJSON', 'inBreak'])
 
     workShiftEndDate = null;
     clearTimeout(workShiftTimer)
     workShiftTimer = null;
+    
+    nextBreakDate = null;
+    clearTimeout(nextBreakTimer)
+    nextBreakTimer = null;
 
     return true
+}
+
+function onBreakStart(duration) {
+    chrome.storage.local.set({ inBreak: true })
+
+    nextBreakDate = null;
+    clearTimeout(nextBreakTimer)
+    nextBreakTimer = null;
+
+    breakEndDate = new Date(Date.now() + duration * 60 * 1000);
+    breakEndTimer = setTimeout(() => {
+        onBreakEnd()
+        alert('Break ended!')
+    }, breakEndDate.getTime() - Date.now());
+}
+
+function onBreakEnd() {
+    chrome.storage.local.set({ inBreak: false })
+
+    breakEndDate = null;
+    clearTimeout(breakEndTimer)
+    breakEndTimer = null;
+
+    nextBreakDate = new Date(Date.now() + request.breakGap * 60 * 1000);
+    nextBreakTimer = setTimeout(() => {
+        onBreakStart(request.breakDuration)
+        alert('Break time!')
+    }, nextBreakDate.getTime() - Date.now());
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -24,12 +59,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             alert('Workshift over!!! Yay!')
         }, workShiftEndDate.getTime() - Date.now());
 
-        chrome.storage.local.set({ inWorkShift: true, workShiftEndDateJSON: workShiftEndDate.toJSON() })
+        if (request.isBreakEnabled) {
+            nextBreakDate = new Date(Date.now() + request.breakGap * 60 * 1000);
+            nextBreakTimer = setTimeout(() => {
+                onBreakStart(request.breakDuration)
+                alert('Break time!')
+            }, nextBreakDate.getTime() - Date.now());
+
+            chrome.storage.local.set({ nextBreakDateJSON: nextBreakDate.toJSON() })
+        }
+
+        chrome.storage.local.set({ 
+            inWorkShift: true, 
+            workShiftEndDateJSON: workShiftEndDate.toJSON() 
+        })
 
         sendResponse(true)
     } 
     else if (request.message === 'END_WORKSHIFT') {
         onWorkShiftEnd()
+    }
+    else if (request.message === 'END_BREAK') {
+        onBreakEnd()
     }
     else if (request.message === 'CLOSE_CURRENT_TAB') {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
