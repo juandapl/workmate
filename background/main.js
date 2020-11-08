@@ -90,8 +90,6 @@ function onBreakEnd({ duration, gap, silent = false }) {
     nextBreakDate = new Date(Date.now() + gap);
     nextBreakTimer = setTimeout(() => {
         onBreakStart({ duration: duration, gap: gap })
-        alertUser({ text: 'Take a breather', title: 'Break Time!', buttonText: 'Okay' })
-        playSound("./sounds/break_start_end.mp3")
     }, nextBreakDate.getTime() - Date.now());
 
     chrome.storage.local.set({ inWorkShift: true, inBreak: false , nextBreakDateJSON: nextBreakDate.toJSON() })
@@ -109,8 +107,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             nextBreakDate = new Date(Date.now() + request.breakGap);
             nextBreakTimer = setTimeout(() => {
                 onBreakStart({ duration: request.breakDuration, gap: request.breakGap })
-                alertUser({ text: 'Take a breather', title: 'Break Time!', buttonText: 'Okay' })
-                playSound("./sounds/break_start_end.mp3")
             }, nextBreakDate.getTime() - Date.now());
 
             chrome.storage.local.set({ 
@@ -186,7 +182,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // Afk alarm, if user has it enabled
 chrome.idle.setDetectionInterval(30)
 chrome.idle.onStateChanged.addListener((state) => {
-    console.log(state);
     if (state === 'idle') {
         chrome.storage.local.get(['afkAlarm', 'inWorkShift'], res => {
             if (res.afkAlarm === true && res.inWorkShift === true) {
