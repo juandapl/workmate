@@ -2,6 +2,9 @@
 let workShiftEndDate;
 let workShiftTimer;
 
+let nextBreakDate;
+let nextBreakTimer;
+
 function onWorkShiftEnd() {
     chrome.storage.local.set({ inWorkShift: false })
     chrome.storage.local.remove('workShiftEndDateJSON')
@@ -15,7 +18,7 @@ function onWorkShiftEnd() {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.message === 'START_WORKSHIFT') {
-        workShiftEndDate = new Date(Date.now() + request.timerDuration * 60 * 1000);
+        workShiftEndDate = new Date(Date.now() + request.workShiftDuration * 60 * 1000);
         workShiftTimer = setTimeout(() => {
             onWorkShiftEnd()
             alert('Workshift over!!! Yay!')

@@ -19,15 +19,17 @@
             <div class= "internal">
                 <input type="radio" id="yes_breaks" name="select_breaks" value="yes">
                 <label for="yes_breaks">Yes</label>
-                <input type="radio" id="no_breaks" name="select_breaks" value="no">
+                <input type="radio" id="no_breaks" name="select_breaks" value="no" checked="checked">
                 <label for="no_breaks">No</label>
                 <br>
-                <span>Breaks of</span>
-                <input type="number" id="break_minutes" name="break_minutes" placeholder="5"><span> mins</span
-                <br>
-                <span>every</span>
-                <input type="number" id="gap_hours" name="gap_hours" placeholder="0"><span> hours</span><span> :</span>
-                <input type="number" id="gap_minutes" name="gap_minutes" placeholder="25"><span> mins</span>
+                <div class="break_duration_settings hide">
+                    <span>Breaks of</span>
+                    <input type="number" id="break_minutes" name="break_minutes" placeholder="5"><span> mins</span>
+                    <br>
+                    <span>every</span>
+                    <input type="number" id="gap_hours" name="gap_hours" placeholder="0"><span> hours</span><span> :</span>
+                    <input type="number" id="gap_minutes" name="gap_minutes" placeholder="25"><span> mins</span>
+                </div>
             </div>
             <h2>Additional settings</h2>
             <div class= "internal">

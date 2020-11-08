@@ -10,7 +10,7 @@ export default function showAlert({ text = 'alert', title = 'Alert' }) {
 
     const alertText = document.createElement('span');
     alertText.setAttribute("style", "font-family: 'Glacial Indifference', sans-serif; font-size: 14px; color: black;");
-    alertText.innerHTML = text + "<br> <br>"; //I know this is dirty, shut up.
+    alertText.innerHTML = text + "<br> <br>"; //I know this is dirty, shut up. // no its fine!!!
 
     const closebutton = document.createElement("button");
     closebutton.setAttribute("style", "background-color:  rgba(39,145,100,1); color: white; padding: 10px 14px; font-family: 'Glacial Indifference', sans-serif; font-size: 14px; border-radius: 4px; border: none; margin: auto; margin-bottom: 10px;");
