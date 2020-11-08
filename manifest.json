@@ -21,12 +21,18 @@
         
       }],
     "browser_action": {
-        "default_icon": "icons/angry_workmate_small.png",
+        "default_icon": "icons/angry_workmate_taskbar.png",
         "default_title": "Workmate",
         "default_popup": "main_popup.html"
     },
     "web_accessible_resources": [
         "icons/*.png",
-        "sounds/*.mp3"
-    ]
+        "sounds/*.mp3",
+        "fonts/*.otf",
+        "fonts/*.ttf"
+    ],
+    "options_ui": {
+        "page": "options.html",
+        "browser_style": true
+      }
 }
