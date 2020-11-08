@@ -6,9 +6,8 @@ let workTimeTimer;
 let nextBreakTimer;
 
 function getHoursAndMinutes(timeLeft) {
-    console.log('timeleft', timeLeft )
-    let hours = parseInt(timeLeft / (60 * 60 * 1000), 10);
-    let minutes = parseInt((timeLeft % (60 * 60 * 1000)) / (60 * 1000), 10);
+    let hours = parseInt(Math.ceil(timeLeft / (60 * 60 * 1000)), 10);
+    let minutes = parseInt((Math.ceil(timeLeft % (60 * 60 * 1000)) / (60 * 1000)), 10);
 
     hours = hours < 10 ? "0" + hours : hours;
     minutes = minutes < 10 ? "0" + minutes : minutes;
