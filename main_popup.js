@@ -59,6 +59,7 @@ document.getElementById('start_workshift').addEventListener('click', function() 
     if (workShiftMinutes) workShiftDurationInMilliseconds += 60 * 1000 * parseInt(workShiftMinutes)
 
     let timeLeftToBreak = 0;
+    const breakDurationInMilliseconds = breakDuration * 60 * 1000
     if (breakHours) timeLeftToBreak += 60 * 60 * 1000 * parseInt(breakHours)
     if (breakMinutes) timeLeftToBreak += 60 * 1000 * parseInt(breakMinutes)
 
@@ -72,7 +73,7 @@ document.getElementById('start_workshift').addEventListener('click', function() 
                 message: 'START_WORKSHIFT',
                 workShiftDuration: workShiftDurationInMilliseconds,
                 isBreakEnabled: true,
-                breakDuration,
+                breakDuration: breakDurationInMilliseconds,
                 breakGap: timeLeftToBreak,
             })
         } else {
@@ -102,7 +103,6 @@ document.getElementById('end_workshift').addEventListener('click', function() {
 // when user clicks 'End Break'
 document.getElementById('end_break').addEventListener('click', function() {
     chrome.runtime.sendMessage({ message: 'END_BREAK' })
-    displayRunningWorkShift()
 })
 
 // when user clicks 'Edit Blocked Pages'

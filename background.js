@@ -20,6 +20,10 @@ function onWorkShiftEnd() {
     clearTimeout(nextBreakTimer)
     nextBreakTimer = null;
 
+    breakEndDate = null;
+    clearTimeout(breakEndTimer)
+    breakEndTimer = null;
+
     return true
 }
 
@@ -34,7 +38,7 @@ function onBreakStart({ duration, gap }) {
     breakEndDate = new Date(Date.now() + duration);
     breakEndTimer = setTimeout(() => {
         onBreakEnd({ duration, gap })
-        alert('Break start!')
+        alert('Break end!')
     }, breakEndDate.getTime() - Date.now());
 }
 
@@ -48,8 +52,8 @@ function onBreakEnd({ duration, gap }) {
 
     nextBreakDate = new Date(Date.now() + gap);
     nextBreakTimer = setTimeout(() => {
-        onBreakStart(duration)
-        alert('Break end!')
+        onBreakStart({ duration, gap })
+        alert('Back to work!')
     }, nextBreakDate.getTime() - Date.now());
 }
 
