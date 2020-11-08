@@ -15,7 +15,7 @@ chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON', 'nextBreakDateJ
         displayRunningWorkShift({ workTimeLeft: remainingTime, timeLeftToBreak: remainingTimeToBreak})
     } else if (res.inBreak === true) {
         const remainingBreakTime = new Date(res.breakEndDateJSON).getTime() - Date.now()
-        displayBreakTime(remainingBreakTime)
+        displayBreakTime({ timeLeftToBreak: remainingBreakTime })
     }
     else {
         displayNewWorkShiftMenu()
@@ -24,7 +24,7 @@ chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON', 'nextBreakDateJ
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.message === 'START_BREAK') {
-        displayBreakTime(request.duration)
+        displayBreakTime({ timeLeftToBreak: request.duration })
     }
     if (request.message === 'END_BREAK') {
         displayRunningWorkShift({ timeLeftToBreak: request.timeLeftToBreak })
@@ -33,10 +33,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         displayNewWorkShiftMenu()
     }
 })
-
-const saveWorkShiftSettings = () => {
-
-}
 
 // when user clicks 'Start Workshift'
 document.getElementById('start_workshift').addEventListener('click', function() {
@@ -101,6 +97,11 @@ document.getElementById('end_workshift').addEventListener('click', function() {
 // when user clicks 'End Break'
 document.getElementById('end_break').addEventListener('click', function() {
     chrome.runtime.sendMessage({ message: 'END_BREAK' })
+})
+
+// when user clicks 'Break Now'
+document.getElementById('break_now').addEventListener('click', function() {
+    chrome.runtime.sendMessage({ message: 'START_BREAK' })
 })
 
 // when user clicks 'Edit Blocked Pages'

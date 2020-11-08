@@ -1,5 +1,5 @@
 
-import { displayRemainingWorkTime, displayRemainingTimeToBreak } from './displayRemainingTime.js'
+import { displayRemainingWorkTime, displayRemainingBreakTime, displayRemainingTimeToBreak } from './displayRemainingTime.js'
 
 const newWorkshiftContainer = document.getElementsByClassName('new_workshift')[0]
 const workShiftStatusContainer = document.getElementsByClassName('workshift_running')[0]
@@ -23,10 +23,12 @@ function displayRunningWorkShift({ workTimeLeft, timeLeftToBreak }) {
 }
 
 // State when in a break
-function displayBreakTime() {
+function displayBreakTime({ timeLeftToBreak }) {
     newWorkshiftContainer.classList.add('hide')
     workShiftStatusContainer.classList.add('hide')
     breakTimeContainer.classList.remove('hide')
+
+    if (timeLeftToBreak) displayRemainingBreakTime(timeLeftToBreak)
 }
 
 

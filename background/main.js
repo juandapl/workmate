@@ -21,7 +21,7 @@ const playSound = (soundURL) => {
 
 function onWorkShiftEnd() {
     chrome.storage.local.set({ inWorkShift: false })
-    chrome.storage.local.remove(['workShiftEndDateJSON', 'nextBreakDateJSON', 'inBreak'])
+    chrome.storage.local.remove(['workShiftEndDateJSON', 'nextBreakDateJSON', 'inBreak', 'breakDuration', 'breakGap'])
     chrome.runtime.sendMessage({ message: 'END_WORKSHIFT '})
     clearAllTimers()
 
@@ -29,7 +29,6 @@ function onWorkShiftEnd() {
 }
 
 function onBreakStart({ duration, gap }) {
-    playSound("./sounds/break_start_end.mp3")
     chrome.runtime.sendMessage({ message: 'START_BREAK', duration })
     clearNextBreakTimer()
 
@@ -37,6 +36,7 @@ function onBreakStart({ duration, gap }) {
     breakEndTimer = setTimeout(() => {
         onBreakEnd({ duration: duration, gap: gap })
         alertUser({ text: 'Back to work', title: 'Break Ended', buttonText: 'Okay' })
+        playSound("./sounds/break_start_end.mp3")
     }, breakEndDate.getTime() - Date.now());
 
     chrome.storage.local.set({ inWorkShift: false, inBreak: true , breakEndDateJSON: breakEndDate.toJSON() })
@@ -44,7 +44,6 @@ function onBreakStart({ duration, gap }) {
 }
 
 function onBreakEnd({ duration, gap }) {
-    playSound("./sounds/break_start_end.mp3")
     chrome.runtime.sendMessage({ message: 'END_BREAK', timeLeftToBreak: gap })
     clearBreakEndTimer()
 
@@ -52,6 +51,7 @@ function onBreakEnd({ duration, gap }) {
     nextBreakTimer = setTimeout(() => {
         onBreakStart({ duration: duration, gap: gap })
         alertUser({ text: 'Take a breather', title: 'Break Time!', buttonText: 'Okay' })
+        playSound("./sounds/break_start_end.mp3")
     }, nextBreakDate.getTime() - Date.now());
 
     chrome.storage.local.set({ inWorkShift: true, inBreak: false , nextBreakDateJSON: nextBreakDate.toJSON() })
@@ -71,9 +71,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             nextBreakTimer = setTimeout(() => {
                 onBreakStart({ duration: request.breakDuration, gap: request.breakGap })
                 alertUser({ text: 'Take a breather', title: 'Break Time!', buttonText: 'Okay' })
+                playSound("./sounds/break_start_end.mp3")
             }, nextBreakDate.getTime() - Date.now());
 
-            chrome.storage.local.set({ nextBreakDateJSON: nextBreakDate.toJSON() })
+            chrome.storage.local.set({ 
+                breakDuration: request.breakDuration, 
+                breakGap: request.breakGap, 
+                nextBreakDateJSON: nextBreakDate.toJSON() 
+            })
         }
 
         playSound("./sounds/workshift_start.mp3")
@@ -87,8 +92,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     else if (request.message === 'END_WORKSHIFT') {
         onWorkShiftEnd()
     }
+    else if (request.message === 'START_BREAK') {
+        chrome.storage.local.get(['breakDuration','breakGap'], res => {
+            if (res.breakDuration && res.breakGap) {
+                onBreakStart({ duration: res.breakDuration, gap: res.breakGap })
+            }
+        })
+    }
     else if (request.message === 'END_BREAK') {
-        onBreakEnd()
+        chrome.storage.local.get(['breakDuration','breakGap'], res => {
+            if (res.breakDuration && res.breakGap) {
+                onBreakEnd({ duration: res.breakDuration, gap: res.breakGap })
+            }
+        })
     }
     else if (request.message === 'CLOSE_CURRENT_TAB') {
         chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
@@ -116,17 +132,51 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // on chrome startup, check if there were any prior workshifts ( scenario: user accidently closed their browser/crashed ) 
 chrome.runtime.onStartup.addListener(() => {
-    chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON'], res => {
-        if (res.inWorkShift !== true) return; // no previous workshift
-        
-        if (new Date(res.workShiftEndDateJSON).getTime() - Date.now() < 0) { // previous workshift already ended
+    chrome.storage.local.get(null, res => { // 'null' is to get all keys
+        if (!res.workShiftEndDate) return; // user is not in workshift
+
+        // check if previous workshift has ended
+        if (res.workShiftEndDate && new Date(res.workShiftEndDateJSON).getTime() - Date.now() < 0) { 
             onWorkShiftEnd() 
+            return
         } else { // resume workshift
             workShiftEndDate = new Date(res.workShiftEndDateJSON)
             workShiftTimer = setTimeout(() => {
                 onWorkShiftEnd()
             }, workShiftEndDate.getTime() - Date.now());
         }
+
+        if (res.inBreak === true) { // user was last in a break
+            if (new Date(res.breakEndDateJSON).getTime() - Date.now() < 0) { // break has ended
+                nextBreakDate = new Date(Date.now() + res.breakGap); // start a new break countdown from scratch
+                nextBreakTimer = setTimeout(() => { 
+                    onBreakStart({ duration: duration, gap: gap })
+                    alertUser({ text: 'Take a breather', title: 'Break Time!', buttonText: 'Okay' })
+                    playSound("./sounds/break_start_end.mp3")
+                }, nextBreakDate.getTime() - Date.now());
+            } else { // user is still in break
+                breakEndDate = new Date(res.breakEndDateJSON);
+                breakEndTimer = setTimeout(() => {
+                    onBreakEnd({ duration: duration, gap: gap })
+                    alertUser({ text: 'Back to work', title: 'Break Ended', buttonText: 'Okay' })
+                    playSound("./sounds/break_start_end.mp3")
+                }, breakEndDate.getTime() - Date.now());
+            }
+        } else { // they are not currently in break
+            if (res.breakDuration) { // breaks are enabled
+                if (new Date(res.nextBreakDateJSON).getTime() - Date.now() < 0) { // user missed the upcoming break
+                    nextBreakDate = new Date(Date.now() + res.breakGap); // start new break countdown from 0
+                } else { // theres still a break coming up
+                    nextBreakDate = new Date(res.nextBreakDateJSON);
+                }
+                nextBreakTimer = setTimeout(() => { 
+                    onBreakStart({ duration: duration, gap: gap })
+                    alertUser({ text: 'Take a breather', title: 'Break Time!', buttonText: 'Okay' })
+                    playSound("./sounds/break_start_end.mp3")
+                }, nextBreakDate.getTime() - Date.now());
+            }
+        }
+        
     })
 });
 
