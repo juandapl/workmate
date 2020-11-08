@@ -3,7 +3,7 @@ import { displayNewWorkShiftMenu, displayBreakTime, displayRunningWorkShift } fr
 import { setBreakOption, isBreakEnabled } from './js/popup_break_input.js'
 
 // whenever popup is opened, get state of app from chrome storage
-chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON', 'nextBreakDateJSON', 'inBreak'], res => {
+chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON', 'nextBreakDateJSON', 'breakEndDateJSON', 'inBreak'], res => {
     if (res.inWorkShift === true) {
         let remainingTimeToBreak
         const remainingTime = new Date(res.workShiftEndDateJSON).getTime() - Date.now()
@@ -13,8 +13,10 @@ chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON', 'nextBreakDateJ
         }
 
         displayRunningWorkShift({ workTimeLeft: remainingTime, timeLeftToBreak: remainingTimeToBreak})
-    } else if (res.inBreak === true) 
-        displayBreakTime()
+    } else if (res.inBreak === true) {
+        const remainingBreakTime = new Date(res.breakEndDateJSON).getTime() - Date.now()
+        displayBreakTime(remainingBreakTime)
+    }
     else {
         displayNewWorkShiftMenu()
     }
@@ -25,7 +27,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         displayBreakTime(request.duration)
     }
     if (request.message === 'END_BREAK') {
-        displayRunningWorkShift()
+        displayRunningWorkShift({ timeLeftToBreak: request.timeLeftToBreak })
+    }
+    if (request.message === 'END_WORKSHIFT') {
+        displayNewWorkShiftMenu()
     }
 })
 
@@ -35,26 +40,36 @@ const saveWorkShiftSettings = () => {
 
 // when user clicks 'Start Workshift'
 document.getElementById('start_workshift').addEventListener('click', function() {
-    const workShiftHours = document.getElementById('total_hours').value
-    const workShiftMinutes =  document.getElementById('total_minutes').value
+    let workShiftHours = document.getElementById('total_hours').value || 0
+    let workShiftMinutes =  document.getElementById('total_minutes').value || 0
 
-    const breakDuration = document.getElementById('break_minutes').value
-    const breakHours = document.getElementById('gap_hours').value
-    const breakMinutes = document.getElementById('gap_minutes').value
+    // only use placaeholder values if both inputs are not filled
+    if (!workShiftHours && !workShiftMinutes) {
+        if (!workShiftHours) workShiftHours = 1
+        if (!workShiftMinutes) workShiftMinutes = 30
+    }
+
+    const breakDuration = document.getElementById('break_minutes').value || 5
+    let breakHours = document.getElementById('gap_hours').value || 0
+    let breakMinutes = document.getElementById('gap_minutes').value || 0
+
+    if (!breakHours && !breakMinutes) {
+        if (!breakHours) breakHours = 0
+        if (!breakMinutes) breakMinutes = 25
+    }
 
     let workShiftDurationInMilliseconds = 0;
-    if (workShiftHours) workShiftDurationInMilliseconds += 60 * 60 * 1000 * parseInt(workShiftHours)
-    if (workShiftMinutes) workShiftDurationInMilliseconds += 60 * 1000 * parseInt(workShiftMinutes)
+    workShiftDurationInMilliseconds += 60 * 60 * 1000 * parseInt(workShiftHours)
+    workShiftDurationInMilliseconds += 60 * 1000 * parseInt(workShiftMinutes)
 
     let timeLeftToBreak = 0;
     const breakDurationInMilliseconds = breakDuration * 60 * 1000
-    if (breakHours) timeLeftToBreak += 60 * 60 * 1000 * parseInt(breakHours)
-    if (breakMinutes) timeLeftToBreak += 60 * 1000 * parseInt(breakMinutes)
-
-    console.log(workShiftDurationInMilliseconds, timeLeftToBreak)
+    if (isBreakEnabled()) {
+        timeLeftToBreak += 60 * 60 * 1000 * parseInt(breakHours)
+        timeLeftToBreak += 60 * 1000 * parseInt(breakMinutes)
+    }
 
     if (workShiftDurationInMilliseconds > 0) {
-        
         if (isBreakEnabled()) {
             chrome.runtime.sendMessage({ 
                 message: 'START_WORKSHIFT',
@@ -72,9 +87,8 @@ document.getElementById('start_workshift').addEventListener('click', function() 
         }
     
         displayRunningWorkShift({ workTimeLeft: workShiftDurationInMilliseconds, timeLeftToBreak })
-    } else { // user left the fields blank, show error 
-        // todo
-        showAlert({ text: 'Please enter a workshift duration.', title: 'Error!', buttonText: 'Try again' })
+    } else {
+        showAlert({ text: 'Please enter a valid workshift duration.', title: 'Error!', buttonText: 'Try again' })
     }
 })
 

@@ -8,9 +8,9 @@ let nextBreakTimer;
 let breakEndDate;
 let breakEndTimer;
 
-const alertUser = ({ text, title }) => {
+const alertUser = ({ text, title, buttonText }) => {
     chrome.tabs.query({ active: true, currentWindow: true }, curTab => {
-        chrome.tabs.sendMessage(curTab[0].id, { message: 'ALERT_USER', text, title })
+        chrome.tabs.sendMessage(curTab[0].id, { message: 'ALERT_USER', text, title, buttonText })
     })
 }
 
@@ -22,6 +22,7 @@ const playSound = (soundURL) => {
 function onWorkShiftEnd() {
     chrome.storage.local.set({ inWorkShift: false })
     chrome.storage.local.remove(['workShiftEndDateJSON', 'nextBreakDateJSON', 'inBreak'])
+    chrome.runtime.sendMessage({ message: 'END_WORKSHIFT '})
     clearAllTimers()
 
     return true
@@ -29,7 +30,6 @@ function onWorkShiftEnd() {
 
 function onBreakStart({ duration, gap }) {
     playSound("./sounds/break_start_end.mp3")
-    chrome.storage.local.set({ inWorkShift: false, inBreak: true })
     chrome.runtime.sendMessage({ message: 'START_BREAK', duration })
     clearNextBreakTimer()
 
@@ -38,12 +38,14 @@ function onBreakStart({ duration, gap }) {
         onBreakEnd({ duration: duration, gap: gap })
         alertUser({ text: 'Back to work', title: 'Break Ended', buttonText: 'Okay' })
     }, breakEndDate.getTime() - Date.now());
+
+    chrome.storage.local.set({ inWorkShift: false, inBreak: true , breakEndDateJSON: breakEndDate.toJSON() })
+    chrome.storage.local.remove('nextBreakDateJSON')
 }
 
 function onBreakEnd({ duration, gap }) {
     playSound("./sounds/break_start_end.mp3")
-    chrome.storage.local.set({ inWorkShift: true, inBreak: false })
-    chrome.runtime.sendMessage({ message: 'END_BREAK' })
+    chrome.runtime.sendMessage({ message: 'END_BREAK', timeLeftToBreak: gap })
     clearBreakEndTimer()
 
     nextBreakDate = new Date(Date.now() + gap);
@@ -51,6 +53,9 @@ function onBreakEnd({ duration, gap }) {
         onBreakStart({ duration: duration, gap: gap })
         alertUser({ text: 'Take a breather', title: 'Break Time!', buttonText: 'Okay' })
     }, nextBreakDate.getTime() - Date.now());
+
+    chrome.storage.local.set({ inWorkShift: true, inBreak: false , nextBreakDateJSON: nextBreakDate.toJSON() })
+    chrome.storage.local.remove('breakEndDateJSON')
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
