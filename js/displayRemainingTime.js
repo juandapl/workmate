@@ -7,6 +7,8 @@ let workTimeTimer;
 let nextBreakTimer;
 let breakTimer;
 
+// alot of duplicated code here... meh
+
 function getHoursAndMinutes(timeLeft) {
     let hours = parseInt(timeLeft / (60 * 60 * 1000))
     let minutes = Math.ceil((parseInt(timeLeft) % (60 * 60 * 1000)) / (60 * 1000))
@@ -32,20 +34,43 @@ function displayBreakTimeLeft(timeLeft) {
     remainingBreakTime.textContent = hours + ":" + minutes;
 }
 
-// calls a provided function {fnc} with params {time} every minute with an initial delay of {firstTickDelay}
-// for duration {time}
-// used to update the work/break time left shown to users
-function callFunctionOncePerMinuteFor({ fnc, time, firstTickDelay }) {
+// -------------------------
+
+function updateWorkTimeOncePerMinute({ time, firstTickDelay }) {
     if (time > 0) { 
         workTimeTimer = setTimeout(() => {
-            fnc(time)
-            time -= 1;
+            displayWorkTimeLeft(time)
+            time -= 60 * 1000;
 
-            callFunctionOncePerMinuteFor({ fnc, time, firstTickDelay: 1000 * 60 })
+            updateWorkTimeOncePerMinute({ time, firstTickDelay: 1000 * 60 })
         }, firstTickDelay)
     }
 }
 
+function updateTimeLeftToBreakOncePerMinute({ time, firstTickDelay }) {
+    if (time > 0) { 
+        nextBreakTimer = setTimeout(() => {
+            displayTimeLeftToBreak(time)
+            time -= 60 * 1000;
+
+            updateTimeLeftToBreakOncePerMinute({ time, firstTickDelay: 1000 * 60 })
+        }, firstTickDelay)
+    }
+}
+
+function updateBreakTimeLeftOncePerMinute({ time, firstTickDelay }) {
+    if (time > 0) { 
+        breakTimer = setTimeout(() => {
+            displayBreakTimeLeft(time)
+            time -= 60 * 1000;
+
+            updateBreakTimeLeftOncePerMinute({ time, firstTickDelay: 1000 * 60 })
+        }, firstTickDelay)
+    }
+}
+
+
+// ------------------ 
 function displayRemainingWorkTime(duration) {
     if (duration < 0) {
         duration = 0
@@ -55,7 +80,7 @@ function displayRemainingWorkTime(duration) {
     displayWorkTimeLeft(time)
 
     clearTimeout(workTimeTimer)
-    callFunctionOncePerMinuteFor({ fnc: displayWorkTimeLeft, time, firstTickDelay })
+    updateWorkTimeOncePerMinute({ time, firstTickDelay })
 }
 
 function displayRemainingTimeToBreak(duration) {
@@ -67,7 +92,7 @@ function displayRemainingTimeToBreak(duration) {
     displayTimeLeftToBreak(time)
 
     clearTimeout(nextBreakTimer)
-    callFunctionOncePerMinuteFor({ fnc: displayTimeLeftToBreak, time, firstTickDelay })
+    updateTimeLeftToBreakOncePerMinute ({ time, firstTickDelay })
 }
 
 function displayRemainingBreakTime(duration) {
@@ -78,8 +103,8 @@ function displayRemainingBreakTime(duration) {
     let firstTickDelay = (duration % (60 * 1000)) // grab the seconds part of the duration
     displayBreakTimeLeft(time)
 
-    clearTimeout(nextBreakTimer)
-    callFunctionOncePerMinuteFor({ fnc: displayBreakTimeLeft, time, firstTickDelay })
+    clearTimeout(breakTimer)
+    updateBreakTimeLeftOncePerMinute({ time, firstTickDelay })
 }
 
 

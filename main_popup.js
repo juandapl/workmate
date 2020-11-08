@@ -55,14 +55,14 @@ document.getElementById('start_workshift').addEventListener('click', function() 
     }
 
     let workShiftDurationInMilliseconds = 0;
-    workShiftDurationInMilliseconds += 60 * 60 * 1000 * parseInt(workShiftHours)
-    workShiftDurationInMilliseconds += 60 * 1000 * parseInt(workShiftMinutes)
+    workShiftDurationInMilliseconds += 60 * 60 * 1000 * parseFloat(workShiftHours)
+    workShiftDurationInMilliseconds += 60 * 1000 * parseFloat(workShiftMinutes)
 
     let timeLeftToBreak = 0;
     const breakDurationInMilliseconds = breakDuration * 60 * 1000
     if (isBreakEnabled()) {
-        timeLeftToBreak += 60 * 60 * 1000 * parseInt(breakHours)
-        timeLeftToBreak += 60 * 1000 * parseInt(breakMinutes)
+        timeLeftToBreak += 60 * 60 * 1000 * parseFloat(breakHours)
+        timeLeftToBreak += 60 * 1000 * parseFloat(breakMinutes)
     }
 
     if (workShiftDurationInMilliseconds > 0) {
