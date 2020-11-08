@@ -89,18 +89,18 @@ function unblockSite() {
 //This is the function that displays the break started/ended alerts, and the workshift ended alert.
 function TimeAlert(AlertType) { //alertType can be breakEnded, breakStarted, workshiftEnded.
     const modal = document.createElement('div');
-    modal.setAttribute("style", "border-radius: 4px; visibility: visible; z-index: 10001; background: linear-gradient(180deg,rgba(45,15,66,1) 45%, rgba(39,145,100,1) 100%); width: 40vw; left: 20vw; top: 30vh; position: fixed; padding: 5vh;");
+    modal.setAttribute("style", "border-style: solid; border-radius: 4px; visibility: visible; z-index: 10001; background: white; width: 40vw; left: 20vw; top: 30vh; position: fixed; padding: 5vh; border-width: 2px; border-color: rgba(45,15,66,1)");
     modal.id = 'TimeAlert'
 
     const img = document.createElement('img');
-    img.src = chrome.runtime.getURL("icons/angry_workmate_small.png");
+    img.src = chrome.runtime.getURL("icons/angry_workmate_small_purp.png");
     img.setAttribute("style", "display: inline-block; width: 50px; height: 50px");
 
     const title = document.createElement('h1');
-    title.setAttribute("style", "color: white; font-family: 'Glacial Indifference', sans-serif; font-size: 40px; line-height: 0px; display: inline-block; vertical-align: super;");
+    title.setAttribute("style", "color: rgba(45,15,66,1); font-family: 'Glacial Indifference', sans-serif; font-size: 40px; line-height: 0px; display: inline-block; vertical-align: super;");
 
     const text = document.createElement('p');
-    text.setAttribute("style", "padding: 10px; font-family: 'Glacial Indifference', sans-serif; font-size: 18px; color: white;")
+    text.setAttribute("style", "padding: 10px; font-family: 'Glacial Indifference', sans-serif; font-size: 18px; color: black;")
 
     const action = document.createElement("button");
     action.setAttribute("style", "background-color: rgba(45,15,66,1); color: white; padding: 20px 36px; font-family: 'Glacial Indifference', sans-serif; font-size: 18px; border-radius: 4px; border: none; margin: auto; margin-bottom: 10px;")
