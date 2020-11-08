@@ -7,12 +7,16 @@
     "background": {
         "scripts": [
             "./js/constants/defaultBlockList.js",
-            "background.js"
+            "./background/clearTimers.js",
+            "./background/main.js"
         ]
     },
-    "permissions": [ "activeTab", "storage" ],
+    "permissions": [ "idle", "tabs", "activeTab", "storage" ],
     "content_scripts": [{
-        "js": ["content.js"],
+        "js": [
+            "./js/showAlert.js", 
+            "content.js"
+        ],
         "matches": ["http://*/*", "https://*/*"]
         
       }],
@@ -22,6 +26,7 @@
         "default_popup": "main_popup.html"
     },
     "web_accessible_resources": [
-        "icons/*.png"
+        "icons/*.png",
+        "sounds/*.mp3"
     ]
 }

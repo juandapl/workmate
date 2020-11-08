@@ -1,46 +1,112 @@
 
-import displayRemainingWorkTime from './js/displayRemainingWorkTime.js'
-import { displayNewWorkShiftMenu, displayRunningWorkShift } from './js/toggleWorkShiftDisplay.js'
+import { displayNewWorkShiftMenu, displayBreakTime, displayRunningWorkShift } from './js/toggleWorkShiftDisplay.js'
+import { setBreakOption, isBreakEnabled } from './js/popup_break_input.js'
 
-// whenever popup is opened, request time left of current WorkShift ( if any, otherwise returns False )
-chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON'], res => {
+// whenever popup is opened, get state of app from chrome storage
+chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON', 'afkAlarm', 'nextBreakDateJSON', 'breakEndDateJSON', 'inBreak'], res => {
     if (res.inWorkShift === true) {
-        displayRunningWorkShift()
-        
+        let remainingTimeToBreak
         const remainingTime = new Date(res.workShiftEndDateJSON).getTime() - Date.now()
-        let remainingTimeInMinutes = remainingTime / (60 * 1000)
 
-        if (remainingTimeInMinutes < 0) remainingTimeInMinutes = 0;
-        displayRemainingWorkTime(remainingTimeInMinutes)
-    } else {
+        if (res.nextBreakDateJSON) {
+            remainingTimeToBreak = new Date(res.nextBreakDateJSON).getTime() - Date.now()
+        }
+
+        displayRunningWorkShift({ workTimeLeft: remainingTime, timeLeftToBreak: remainingTimeToBreak})
+    } else if (res.inBreak === true) {
+        const remainingBreakTime = new Date(res.breakEndDateJSON).getTime() - Date.now()
+        displayBreakTime({ timeLeftToBreak: remainingBreakTime })
+    }
+    else {
+        displayNewWorkShiftMenu()
+    }
+
+    // misc settings
+    if (res.afkAlarm === true) {
+        document.getElementById('afk').checked = true
+    }
+})
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.message === 'START_BREAK') {
+        displayBreakTime({ timeLeftToBreak: request.duration })
+    }
+    if (request.message === 'END_BREAK') {
+        displayRunningWorkShift({ timeLeftToBreak: request.timeLeftToBreak })
+    }
+    if (request.message === 'END_WORKSHIFT') {
         displayNewWorkShiftMenu()
     }
 })
 
 // when user clicks 'Start Workshift'
 document.getElementById('start_workshift').addEventListener('click', function() {
-    const workShiftHours = document.getElementById('total_hours').value
-    const workShiftMinutes =  document.getElementById('total_minutes').value
+    let workShiftHours = document.getElementById('total_hours').value || 0
+    let workShiftMinutes =  document.getElementById('total_minutes').value || 0
 
-    let workShiftDurationInMinutes = 0;
-    if (workShiftHours) workShiftDurationInMinutes += 60 * workShiftHours
-    if (workShiftMinutes) workShiftDurationInMinutes += workShiftMinutes
+    // only use placaeholder values if both inputs are not filled
+    if (!workShiftHours && !workShiftMinutes) {
+        if (!workShiftHours) workShiftHours = 1
+        if (!workShiftMinutes) workShiftMinutes = 30
+    }
 
-    if (workShiftDurationInMinutes > 0) {
-        chrome.runtime.sendMessage({ message: 'START_WORKSHIFT', timerDuration: workShiftDurationInMinutes })
-        displayRemainingWorkTime(workShiftDurationInMinutes)
-        displayRunningWorkShift()
-    } else { // user left the fields blank, show error 
-        // todo
-        showAlert("Please enter a workshift duration.")
+    const breakDuration = document.getElementById('break_minutes').value || 5
+    let breakHours = document.getElementById('gap_hours').value || 0
+    let breakMinutes = document.getElementById('gap_minutes').value || 0
+
+    if (!breakHours && !breakMinutes) {
+        if (!breakHours) breakHours = 0
+        if (!breakMinutes) breakMinutes = 25
+    }
+
+    let workShiftDurationInMilliseconds = 0;
+    workShiftDurationInMilliseconds += 60 * 60 * 1000 * parseFloat(workShiftHours)
+    workShiftDurationInMilliseconds += 60 * 1000 * parseFloat(workShiftMinutes)
+
+    let timeLeftToBreak = 0;
+    const breakDurationInMilliseconds = breakDuration * 60 * 1000
+    if (isBreakEnabled()) {
+        timeLeftToBreak += 60 * 60 * 1000 * parseFloat(breakHours)
+        timeLeftToBreak += 60 * 1000 * parseFloat(breakMinutes)
+    }
+
+    if (workShiftDurationInMilliseconds > 0) {
+        if (isBreakEnabled()) {
+            chrome.runtime.sendMessage({ 
+                message: 'START_WORKSHIFT',
+                workShiftDuration: workShiftDurationInMilliseconds,
+                isBreakEnabled: true,
+                breakDuration: breakDurationInMilliseconds,
+                breakGap: timeLeftToBreak,
+            })
+        } else {
+            chrome.runtime.sendMessage({ 
+                message: 'START_WORKSHIFT',
+                workShiftDuration: workShiftDurationInMilliseconds,
+                isBreakEnabled: false
+            })
+        }
+    
+        displayRunningWorkShift({ workTimeLeft: workShiftDurationInMilliseconds, timeLeftToBreak })
+    } else {
+        showAlert({ text: 'Please enter a valid workshift duration.', title: 'Error!', buttonText: 'Try again' })
     }
 })
 
 // when user clicks 'End Workshift'
 document.getElementById('end_workshift').addEventListener('click', function() {
     chrome.runtime.sendMessage({ message: 'END_WORKSHIFT' })
-    displayRemainingWorkTime(0)
     displayNewWorkShiftMenu()
+})
+
+// when user clicks 'End Break'
+document.getElementById('end_break').addEventListener('click', function() {
+    chrome.runtime.sendMessage({ message: 'END_BREAK' })
+})
+
+// when user clicks 'Break Now'
+document.getElementById('break_now').addEventListener('click', function() {
+    chrome.runtime.sendMessage({ message: 'START_BREAK' })
 })
 
 // when user clicks 'Edit Blocked Pages'
@@ -53,30 +119,11 @@ document.getElementById('blacklist_page').addEventListener('click', function() {
     chrome.runtime.sendMessage({ message: 'BLOCK_CURRENT_SITE'})
 })
 
-function showAlert(AlertText) {
-    const modal = document.createElement('div');
-    modal.setAttribute("style", "visibility: visible; z-index: 9999; background: white; width: 200px; left: 50px; top: 200px; position: absolute; padding-left: 15px; border-radius: 4px; border-style: solid; border-width: 1px; border-color: rgba(45,15,66,1);");
-    modal.id = 'Alert'
+document.getElementById('afk').addEventListener('change', (e) => {
+    const value = e.target.checked
+    chrome.storage.local.set({ afkAlarm: value })
+})
 
-    const title = document.createElement('p');
-    title.setAttribute("style", "color: rgba(45,15,66,1); font-family: 'Glacial Indifference', sans-serif; font-size: 30px; line-height: 0px;");
-    title.innerHTML = "Alert"
-
-    const text = document.createElement('span');
-    text.setAttribute("style", "font-family: 'Glacial Indifference', sans-serif; font-size: 14px; color: black;");
-    text.innerHTML = AlertText + "<br> <br>"; //I know this is dirty, shut up.
-
-    const closebutton = document.createElement("button");
-    closebutton.setAttribute("style", "background-color:  rgba(39,145,100,1); color: white; padding: 10px 14px; font-family: 'Glacial Indifference', sans-serif; font-size: 14px; border-radius: 4px; border: none; margin: auto; margin-bottom: 10px;");
-    closebutton.textContent = "Try again";
-
-    modal.appendChild(title);
-    modal.appendChild(text);
-    modal.appendChild(closebutton);
-    document.body.appendChild(modal) ;
-
-    //action when clicking
-    closebutton.addEventListener('click', function(){
-        document.body.removeChild(modal);
-    })
-}
+// when user clicks yes/no to the breaks
+document.getElementById('yes_breaks').addEventListener('click', () => setBreakOption('enable'))
+document.getElementById('no_breaks').addEventListener('click', () => setBreakOption('disable'))

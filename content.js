@@ -14,9 +14,13 @@ chrome.storage.local.get(['inWorkShift', 'blockList'], res => {
 
 //todo here add the listener to execute timealert? maybe?
 
-
 chrome.runtime.onMessage.addListener((request) => {
     if (request.message === 'BLOCK_CURRENT_SITE') blockSite();
+    if (request.message === 'UNBLOCK_CURRENT_SITE') unblockSite();
+    if (request.message === 'ALERT_USER') {
+        const { alertType } = request
+        TimeAlert(alertType)
+    }
 })
 
 function blockSite() {
@@ -30,7 +34,7 @@ function blockSite() {
     );
 
     const modal = document.createElement('div');
-    modal.setAttribute("style", "visibility: visible; z-index: 9999; background: linear-gradient(180deg,rgba(45,15,66,1) 45%, rgba(39,145,100,1) 100%); width: 100vw; height: 100vh; left: 0; top: 0; right: 0; bottom: 0; position: absolute;");
+    modal.setAttribute("style", "visibility: visible; z-index: 9999; background: linear-gradient(180deg,rgba(45,15,66,1) 45%, rgba(39,145,100,1) 100%); width: 100vw; height: 100vh; left: 0; top: 0; right: 0; bottom: 0; position: fixed;");
     modal.id = 'workMateBlocked'
 
     const alertContainer = document.createElement('div');
@@ -61,7 +65,6 @@ function blockSite() {
         unblockSite()
     })
 
-    
     alertContainer.appendChild(img)
     alertContainer.appendChild(alert)
     alertContainer.appendChild(closeSiteButton)
@@ -77,10 +80,7 @@ function unblockSite() {
     const modal = document.getElementById('workMateBlocked')
 
     document.body.removeChild(modal)
-
-    document.body.style.visibility = 'visible'
-    document.body.style.height = ''
-    document.body.style.overflow = 'visible'
+    document.body.setAttribute("style", "visibility: ''; width: ''; height: ''; overflow: ''")
 }
 
 
@@ -89,7 +89,7 @@ function unblockSite() {
 //This is the function that displays the break started/ended alerts, and the workshift ended alert.
 function TimeAlert(AlertType) { //alertType can be breakEnded, breakStarted, workshiftEnded.
     const modal = document.createElement('div');
-    modal.setAttribute("style", "border-radius: 4px; visibility: visible; z-index: 9999; background: linear-gradient(180deg,rgba(45,15,66,1) 45%, rgba(39,145,100,1) 100%); width: 40vw; left: 20vw; top: 30vh; position: absolute; padding: 5vh;");
+    modal.setAttribute("style", "border-radius: 4px; visibility: visible; z-index: 10001; background: linear-gradient(180deg,rgba(45,15,66,1) 45%, rgba(39,145,100,1) 100%); width: 40vw; left: 20vw; top: 30vh; position: fixed; padding: 5vh;");
     modal.id = 'TimeAlert'
 
     const img = document.createElement('img');
@@ -104,28 +104,32 @@ function TimeAlert(AlertType) { //alertType can be breakEnded, breakStarted, wor
 
     const action = document.createElement("button");
     action.setAttribute("style", "background-color: rgba(45,15,66,1); color: white; padding: 20px 36px; font-family: 'Glacial Indifference', sans-serif; font-size: 18px; border-radius: 4px; border: none; margin: auto; margin-bottom: 10px;")
+    action.addEventListener('click', dismissTimeAlert)
 
     modal.appendChild(img);
     modal.appendChild(title);
     modal.appendChild(text);
     modal.appendChild(action);
 
-    if (AlertType=="workshiftEnded")
-    {
+    if (AlertType=="idleAlert") {
+        title.innerHTML = "Hello? Are you there?";
+        text.innerHTML = "You haven't done anything in a while... are you still there?";
+        action.textContent = "I'm back!";
+    }
+
+    if (AlertType=="workshiftEnded") {
         title.innerHTML = "Workshift is over!";
         text.innerHTML = "Well done! All sites will be unlocked. Thank you for using Workmate!";
         action.textContent = "Goodbye!";
     }
 
-    if (AlertType=="breakStarted")
-    {
+    if (AlertType=="breakStarted") {
         title.innerHTML = "It's break time!";
         text.innerHTML = "Good job keeping focused! All blocked sites will be reopened for a while.";
         action.textContent = "Continue"
     }
 
-    if (AlertType=="breakEnded")
-    {
+    if (AlertType=="breakEnded") {
         title.innerHTML = "Break time is over!";
         text.innerHTML = "It's time to get back at it. Unproductive sites will be blocked again.";
         action.textContent = "Get back to work";
@@ -134,9 +138,14 @@ function TimeAlert(AlertType) { //alertType can be breakEnded, breakStarted, wor
         secondaryAction.setAttribute("style", "background: none; color: white;padding: 16px 32px;font-family: 'Glacial Indifference', sans-serif;font-size: 12px;border: none;margin: auto; display: inline-block;text-decoration: underline;")
         secondaryAction.textContent = "Two more minutes, please!"
         modal.appendChild(secondaryAction)
-    }
-    document.body.appendChild(modal)   
 
+        secondaryAction.addEventListener('click', function() {
+            chrome.runtime.sendMessage({ message: 'SNOOZE_BREAK' })
+            dismissTimeAlert()
+        })
+    }
+
+    document.body.appendChild(modal)   
 }
 
 function dismissTimeAlert() { //yes Jun, I stole this code from you.
