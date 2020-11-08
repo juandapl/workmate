@@ -23,8 +23,9 @@ function onWorkShiftEnd() {
     return true
 }
 
-function onBreakStart(duration) {
+function onBreakStart({ duration, gap }) {
     chrome.storage.local.set({ inBreak: true })
+    chrome.runtime.sendMessage({ message: 'START_BREAK' })
 
     nextBreakDate = null;
     clearTimeout(nextBreakTimer)
@@ -32,22 +33,23 @@ function onBreakStart(duration) {
 
     breakEndDate = new Date(Date.now() + duration);
     breakEndTimer = setTimeout(() => {
-        onBreakEnd()
-        alert('Break ended!')
+        onBreakEnd({ duration, gap })
+        alert('Break start!')
     }, breakEndDate.getTime() - Date.now());
 }
 
-function onBreakEnd() {
+function onBreakEnd({ duration, gap }) {
     chrome.storage.local.set({ inBreak: false })
+    chrome.runtime.sendMessage({ message: 'END_BREAK' })
 
     breakEndDate = null;
     clearTimeout(breakEndTimer)
     breakEndTimer = null;
 
-    nextBreakDate = new Date(Date.now() + request.breakGap);
+    nextBreakDate = new Date(Date.now() + gap);
     nextBreakTimer = setTimeout(() => {
-        onBreakStart(request.breakDuration)
-        alert('Break time!')
+        onBreakStart(duration)
+        alert('Break end!')
     }, nextBreakDate.getTime() - Date.now());
 }
 
@@ -62,7 +64,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (request.isBreakEnabled) {
             nextBreakDate = new Date(Date.now() + request.breakGap);
             nextBreakTimer = setTimeout(() => {
-                onBreakStart(request.breakDuration)
+                onBreakStart({ duration: request.breakDuration, gap: request.breakGap })
                 alert('Break time!')
             }, nextBreakDate.getTime() - Date.now());
 

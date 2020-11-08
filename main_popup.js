@@ -27,6 +27,15 @@ chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON', 'nextBreakDateJ
     }
 })
 
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.message === 'START_BREAK') {
+        displayBreakTime()
+    }
+    if (request.message === 'END_BREAK') {
+        displayRunningWorkShift()
+    }
+})
+
 const saveWorkShiftSettings = () => {
 
 }
@@ -75,6 +84,7 @@ document.getElementById('start_workshift').addEventListener('click', function() 
         }
     
         displayRemainingWorkTime(workShiftDurationInMilliseconds)
+        displayRemainingTimeToBreak(timeLeftToBreak)
         displayRunningWorkShift()
     } else { // user left the fields blank, show error 
         // todo
@@ -87,6 +97,12 @@ document.getElementById('end_workshift').addEventListener('click', function() {
     chrome.runtime.sendMessage({ message: 'END_WORKSHIFT' })
     displayRemainingWorkTime(0)
     displayNewWorkShiftMenu()
+})
+
+// when user clicks 'End Break'
+document.getElementById('end_break').addEventListener('click', function() {
+    chrome.runtime.sendMessage({ message: 'END_BREAK' })
+    displayRunningWorkShift()
 })
 
 // when user clicks 'Edit Blocked Pages'
