@@ -11,7 +11,7 @@
             "./background/main.js"
         ]
     },
-    "permissions": [ "tabs", "activeTab", "storage" ],
+    "permissions": [ "idle", "tabs", "activeTab", "storage" ],
     "content_scripts": [{
         "js": [
             "./js/showAlert.js", 

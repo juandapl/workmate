@@ -111,23 +111,25 @@ function TimeAlert(AlertType) { //alertType can be breakEnded, breakStarted, wor
     modal.appendChild(text);
     modal.appendChild(action);
 
+    if (AlertType=="idleAlert") {
+        title.innerHTML = "Hello? Are you there?";
+        text.innerHTML = "You haven't done anything in a while... are you still there?";
+        action.textContent = "I'm back!";
+    }
 
-    if (AlertType=="workshiftEnded")
-    {
+    if (AlertType=="workshiftEnded") {
         title.innerHTML = "Workshift is over!";
         text.innerHTML = "Well done! All sites will be unlocked. Thank you for using Workmate!";
         action.textContent = "Goodbye!";
     }
 
-    if (AlertType=="breakStarted")
-    {
+    if (AlertType=="breakStarted") {
         title.innerHTML = "It's break time!";
         text.innerHTML = "Good job keeping focused! All blocked sites will be reopened for a while.";
         action.textContent = "Continue"
     }
 
-    if (AlertType=="breakEnded")
-    {
+    if (AlertType=="breakEnded") {
         title.innerHTML = "Break time is over!";
         text.innerHTML = "It's time to get back at it. Unproductive sites will be blocked again.";
         action.textContent = "Get back to work";

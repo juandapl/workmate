@@ -16,6 +16,7 @@ const alertUser = (alertType) => {
 
 const playSound = (soundURL) => {
     var audio = new Audio(chrome.runtime.getURL(soundURL));
+    audio.volume = 0.7;
     audio.play();
 }
 
@@ -180,6 +181,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
     }
 });
+
+
+// Afk alarm, if user has it enabled
+chrome.idle.setDetectionInterval(30)
+chrome.idle.onStateChanged.addListener((state) => {
+    console.log(state);
+    if (state === 'idle') {
+        chrome.storage.local.get(['afkAlarm', 'inWorkShift'], res => {
+            if (res.afkAlarm === true && res.inWorkShift === true) {
+                alertUser('idleAlert')
+                playSound("./sounds/inactivity_alarm(loop-this).mp3")
+            }
+        })
+    }
+})
 
 // on chrome startup, check if there were any prior workshifts ( scenario: user accidently closed their browser/crashed ) 
 chrome.runtime.onStartup.addListener(() => {
