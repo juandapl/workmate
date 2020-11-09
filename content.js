@@ -86,6 +86,16 @@ function unblockSite() {
 
 //This is the function that displays the break started/ended alerts, and the workshift ended alert.
 function TimeAlert(AlertType) { //alertType can be breakEnded, breakStarted, workshiftEnded.
+    var newFont = document.createElement('style');
+        newFont.appendChild(document.createTextNode("\
+        @font-face {\
+            font-family: 'Glacial Indifference', bold, sans-serif;\
+            src: url(fonts/GlacialIndifference-Bold.otf);\
+        }\
+        ")
+    );
+    document.head.appendChild(newFont)
+    
     const modal = document.createElement('div');
     modal.setAttribute("style", "border-radius: 4px; visibility: visible; z-index: 10001; background: white; width: 40vw; left: 20vw; top: 30vh; position: fixed; padding: 3vh; border-style: solid; border-width: 2px; border-color: rgba(45,15,66,1);");
     modal.id = 'TimeAlert'
