@@ -3,7 +3,7 @@ import { displayNewWorkShiftMenu, displayBreakTime, displayRunningWorkShift } fr
 import { setBreakOption, isBreakEnabled } from './js/popup_break_input.js'
 
 // whenever popup is opened, get state of app from chrome storage
-chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON', 'afkAlarm', 'nextBreakDateJSON', 'breakEndDateJSON', 'inBreak'], res => {
+chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON', 'afkAlarm', 'nextBreakDateJSON', 'breakEndDateJSON', 'inBreak','tmw'], res => {
     if (res.inWorkShift === true) {
         let remainingTimeToBreak
         const remainingTime = new Date(res.workShiftEndDateJSON).getTime() - Date.now()
@@ -24,6 +24,9 @@ chrome.storage.local.get(['inWorkShift', 'workShiftEndDateJSON', 'afkAlarm', 'ne
     // misc settings
     if (res.afkAlarm === true) {
         document.getElementById('afk').checked = true
+    }
+    if (res.tmw === true) {
+        document.getElementById('tmw').checked = true
     }
 })
 
@@ -122,6 +125,11 @@ document.getElementById('blacklist_page').addEventListener('click', function() {
 document.getElementById('afk').addEventListener('change', (e) => {
     const value = e.target.checked
     chrome.storage.local.set({ afkAlarm: value })
+})
+
+document.getElementById('tmw').addEventListener('change', (e) => {
+    const value = e.target.checked
+    chrome.storage.local.set({ tmw: value })
 })
 
 // when user clicks yes/no to the breaks

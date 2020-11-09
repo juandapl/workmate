@@ -192,6 +192,103 @@ chrome.idle.onStateChanged.addListener((state) => {
     }
 })
 
+
+// too much wikipedia, if enabled
+// yes, this is uglily written, but for some reason if i used functions to avoid copypasting the scope messed with my code. Enjoy!
+let timeWikiStarted = false
+function timeWiki()
+{
+    chrome.storage.local.get(['tmw', 'inWorkShift'], res => 
+    {
+        //sets timeout
+        wikiTimeout = setTimeout(() =>{
+        if (res.tmw === true && res.inWorkShift === true) 
+        {
+            alertUser('wikiAlert')
+            playSound("./sounds/inactivity_alarm(loop-this).mp3")
+            timeWikiStarted = true
+        }
+        }, 600000)     
+
+        //cancels timeout if navigated away from wikipedia
+        chrome.tabs.onActivated.addListener( () =>
+        {
+            chrome.tabs.query({ active: true, currentWindow: true }, curTab => {
+                let currentSite = new URL(curTab[0].url)
+                let domainName = currentSite.hostname
+                if (domainName.split('.').length == 2) {
+                    domainName = 'www.' + domainName
+                }
+                if(domainName!="www.wikipedia.org"){
+                    clearTimeout(wikiTimeout)
+                    timeWikiStarted = false
+                }
+              })
+        }
+        )
+        //cancels timeout if url changed on activetab away from wikipedia
+        chrome.tabs.onUpdated.addListener( () =>
+        {
+            chrome.tabs.query({ active: true, currentWindow: true }, curTab => {
+                let currentSite = new URL(curTab[0].url)
+                let domainName = currentSite.hostname
+                if (domainName.split('.').length == 2) {
+                    domainName = 'www.' + domainName
+                }
+                if(domainName!="www.wikipedia.org"){
+                    clearTimeout(wikiTimeout)
+                    timeWikiStarted = false
+                }
+              })
+        }
+        )
+        //cancels timeout if tab is closed
+        chrome.tabs.onRemoved.addListener( () =>
+        {
+            clearTimeout(wikiTimeout)
+            timeWikiStarted = false
+                
+              
+        }
+        )
+    }
+    )
+}
+
+// if tab switched to wikipedia
+chrome.tabs.onActivated.addListener( () =>
+    {
+        if(!timeWikiStarted){
+        chrome.tabs.query({ active: true, currentWindow: true }, curTab => {
+            let currentSite = new URL(curTab[0].url)
+            let domainName = currentSite.hostname
+            if (domainName.split('.').length == 2) {
+                domainName = 'www.' + domainName
+            }
+            if(domainName=="www.wikipedia.org"){
+                timeWiki()
+            }
+          })
+        }
+    }
+)
+chrome.tabs.onUpdated.addListener(() =>
+    {
+        if(!timeWikiStarted){
+        chrome.tabs.query({ active: true, currentWindow: true }, curTab => {
+            let currentSite = new URL(curTab[0].url)
+            let domainName = currentSite.hostname
+            if (domainName.split('.').length == 2) {
+                domainName = 'www.' + domainName
+            }
+            if(domainName=="www.wikipedia.org"){
+                timeWiki()
+            }
+          })
+        }
+    } 
+)
+
 // on chrome startup, check if there were any prior workshifts ( scenario: user accidently closed their browser/crashed ) 
 chrome.runtime.onStartup.addListener(() => {
     chrome.storage.local.get(null, res => { // 'null' is to get all keys
