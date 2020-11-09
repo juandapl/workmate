@@ -94,8 +94,9 @@ function TimeAlert(AlertType) { //alertType can be breakEnded, breakStarted, wor
     img.src = chrome.runtime.getURL("icons/angry_workmate_small_purp.png");
     img.setAttribute("style", "display: inline-block; width: 50px; height: 50px;");
 
-    const title = document.createElement('h1');
+    const title = document.createElement('p');
     title.setAttribute("style", "padding-left: 10px; color: rgba(45,15,66,1); font-family: 'Glacial Indifference', sans-serif; font-size: 40px; line-height: 0px; display: inline-block; vertical-align: super;");
+    title.setAttribute("class", "Alert")
 
     const text = document.createElement('p');
     text.setAttribute("style", "padding: 10px; font-family: 'Glacial Indifference', sans-serif; font-size: 18px; color: black;")
@@ -113,6 +114,12 @@ function TimeAlert(AlertType) { //alertType can be breakEnded, breakStarted, wor
         title.innerHTML = "<b>Hello? Are you there?</b>";
         text.innerHTML = "You haven't done anything in a while... are you still there?";
         action.textContent = "I'm back!";
+    }
+
+    if (AlertType=="wikiAlert") {
+        title.innerHTML = "<b>Too Much Wikipedia!</b>";
+        text.innerHTML = "You have been in Wikipedia for 10 minutes straight. Are you sure you're not procrastinating?";
+        action.textContent = "Continue";
     }
 
     if (AlertType=="workshiftEnded") {
