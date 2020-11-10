@@ -2,7 +2,7 @@
 A Firefox/Chrome extension that assists the user in staying productive by blocking social media websites, allocating work/break timings, and prodding the user if they are inactive.
 
 # Inspiration
-In Zoom University, where your rest and work spaces are the same, it is very easy to get distracted. We noticed that in remote learning, we managed to finish way less work than we did with regular classes. This led us to think that although we spend the same time in front of our work, we actually use much less of it to actually work.
+In Zoom University, where your rest and work spaces are the same, it is very easy to get distracted. We noticed that in remote learning, we managed to finish way less work than we did with regular classes. This led us to think that although we spend the same time in front of our screens, we actually use much less of it to actually work.
 
 # How it was built
 The extension connects to Chrome and Firefox's WebExtensions API using
