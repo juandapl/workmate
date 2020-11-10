@@ -21,3 +21,20 @@ The extension was built continuously in two places 18,943 kilometers and 13 time
 - We learned to design a workflow where our work wouldn't overlap with each other, and where we could take advantage of the different skillsets of our team.
 - We learned to conduct independent testing for each of the platforms we were working on, with each member working on the compatibility for the browser they were using (Firefox/Chrome)
 - Reading your teammate's code (even if it resembles famous italian dishes), and getting directly into problem-solving is the best way to understand a new framework. Clear communication and keeping your teammate updated while keeping expectations clear saves a lot of time of trying to trace and understand new code.
+
+
+# Installing
+The extension is not yet published in the browsers' stores. Until then, you have to install it with a trick.
+Chrome:
+- download the code, and go to chrome://extensions 
+- tick 'developer mode'
+- click on 'load unpacked' and add the folder you just downloaded
+Firefox
+- download the code, and go to about:debugging
+- click on 'this firefox' then on 'load temporary extension'
+- navigate to the folder you just downloaded, and open 'manifest.json'
+
+
+
+
+
