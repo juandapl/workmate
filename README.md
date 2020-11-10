@@ -25,10 +25,12 @@ The extension was built continuously in two places 18,943 kilometers and 13 time
 
 # Installing
 The extension is not yet published in the browsers' stores. Until then, you have to install it with a trick.
+
 Chrome:
 - download the code, and go to chrome://extensions 
 - tick 'developer mode'
 - click on 'load unpacked' and add the folder you just downloaded
+
 Firefox
 - download the code, and go to about:debugging
 - click on 'this firefox' then on 'load temporary extension'
